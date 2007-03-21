@@ -32,11 +32,11 @@ class tx_kickstarter_methodperaction_renderer {
 	var $pObj;
 
 	function tx_kickstarter_methodperaction_renderer($pObj = 0) {
-		$this->pObj->pObj = $pObj;
+		$this->pObj = $pObj;
 	}
 
    function setParent($pObj) {
-        $this->pObj->pObj = $pObj;
+        $this->pObj = $pObj;
     }
 
     /**
@@ -48,43 +48,24 @@ class tx_kickstarter_methodperaction_renderer {
      */
 	function generateSetup($extKey, $k, $static) {
 		$lines = array();
-		$incls = array();
-		$acts  = array();
 
 		$cN = $this->pObj->returnName($extKey,'class','');
         $actions = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['actions'];
 
 		$lines[] = '
-# Common configuration
-plugin.'.$cN.'.configurations {
-  templatePath = EXT:'.$extKey.'/templates/
-}
-
 includeLibs.tx_div = EXT:div/class.tx_div.php
-includeLibs.tx_lib_switch = EXT:lib/class.tx_lib_switch.php';
+includeLibs.'.$cN.'_controller = EXT:'.$extKey.'/controllers/class.'.$cN.'_controller.php
 
-		foreach($actions as $action) {
-			if(!trim($action['title'])) continue;
-			$acts[] = '    '.$action['title'].' = '.($action[plus_user_obj]?'USER_INT':'USER').'
-    '.$action['title'].' {
-       userFunc = '.$cN.'_controller_'.$action[title].'->main
-       setupPath = plugin.'.$cN.'.configurations.
-    }';
-			$incls[] = 'includeLibs.'.$cN.'_controller_'.$action[title].' = '.
-				'EXT:'.$extKey.'/controllers/class.'.$cN.'_controller_'.$action[title].'.php';
-		}
-		$lines = array_merge($lines, $incls);
+# Common configuration
+plugin.'.$cN.'.controller = '.($actions[1][plus_user_obj]?'USER_INT':'USER').'
+plugin.'.$cN.'.controller {
+  userFunc = '.$cN.'_controller->main
+  action = '.$actions[1][title].'
+  templatePath = EXT:'.$extKey.'/templates/
+}';
 
 		$lines[] = '
-# The controller switch
-plugin.'.$cN.'.controllerSwitch = USER
-plugin.'.$cN.'.controllerSwitch {
-    userFunc = tx_lib_switch->main
-';
-
-		$lines = array_merge($lines, $acts);
-		$lines[] = '}
-tt_content.list.20.tx_'.$extKey.' =< plugin.'.$cN.'.controllerSwitch';
+tt_content.list.20.'.$extKey.' =< plugin.'.$cN.'.controller';
 
 		if(!$static)
 			$this->pObj->addFileToFileArray('configurations/setup.txt', implode("\n", $lines));
@@ -100,6 +81,7 @@ tt_content.list.20.tx_'.$extKey.' =< plugin.'.$cN.'.controllerSwitch';
      */
 	function generateConfigClass($extKey, $k) {
 
+/*
 		$cN = $this->pObj->returnName($extKey,'class','');
 
 		$indexContent = '
@@ -117,6 +99,7 @@ class '.$cN.'_configurations extends tx_lib_configurations {
 					'Class that handles TypoScript configuration.'
 			)
 		);
+*/
 	}
 
     /**
@@ -129,6 +112,12 @@ class '.$cN.'_configurations extends tx_lib_configurations {
 
 		$cN = $this->pObj->returnName($extKey,'class','');
 
+		$indexContent = '
+tx_div::load(\'tx_lib_controller\');
+
+class '.$cN.'_controller extends tx_lib_controller {
+';
+
         $actions = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['actions'];
 		foreach($actions as $action) {
 			if(!trim($action[title])) continue;
@@ -140,33 +129,28 @@ class '.$cN.'_configurations extends tx_lib_configurations {
 			$templates = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['templates'];
 			$template  = $templates[$action[template]][title].'.php';
 
-			$indexContent = '
-tx_div::load(\'tx_lib_controller\');
-
-class '.$cN.'_controller_'.$action[title].' extends tx_lib_controller {
-
-		function main() {
-                $model = tx_div::makeInstance(\''.$model.'\');
-                $model->setConfigurations($this->pObj->configurations);
-                $model->load($this->pObj->parameters);
-                $resultList = $model->get(\'resultList\');
-                $view = tx_div::makeInstance(\''.$view.'\');
-                $view->set(\'entryList\', $resultList);
-                $view->setController($this->pObj);
-                $view->setTemplatePath($this->pObj->configurations->get(\'templatePath\'));
-                return $view->render($this->pObj->configurations->get(\''.$template.'\'));
+			$indexContent .= '
+		function '.$action[title].'() {
+                $modelClassName = tx_div::makeInstanceClassName(\''.$model.'\');
+                $viewClassName = tx_div::makeInstanceClassName(\''.$view.'\');
+				$view = new $viewClassName(new $modelClassName());
+                $view->setController($this);
+                $view->setTemplatePath($this->getConfiguration(\'templatePath\'));
+                return $view->render($this->getConfiguration(\''.$template.'\'));
 		}
-}';
+';
 
-			$this->pObj->addFileToFileArray('controllers/class.'.$cN.'_controller_'.$action['title'].'.php', 
-				$this->pObj->PHPclassFile(
-					$extKey,
-					'controllers/class.'.$cN.'_controller_'.$action['title'].'.php',
-					$indexContent,
-					'Class that implements the controller for action '.$action['title'].'.'
-				)
-			);
 		}
+		$indexContent .= '}'."\n";
+
+		$this->pObj->addFileToFileArray('controllers/class.'.$cN.'_controller.php', 
+			$this->pObj->PHPclassFile(
+				$extKey,
+				'controllers/class.'.$cN.'_controller.php',
+				$indexContent,
+				'Class that implements the controller for '.$cN.'.'
+			)
+		);
 	}
 
     /**
@@ -189,9 +173,9 @@ class '.$cN.'_controller_'.$action[title].' extends tx_lib_controller {
 
 			$indexContent = '
 class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
-        var $configurations;
 
-        function load($parameters = null) {
+        function '.$cN.'_model_'.$tablename.'($parameters = null) {
+				parent::tx_lib_object();
 
                 // fix settings
                 $fields = \'*\';
@@ -208,18 +192,12 @@ class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
                 // query
                 $query = $GLOBALS[\'TYPO3_DB\']->SELECTquery($fields, $tables, $where, $groupBy, $orderBy);
                 $result = $GLOBALS[\'TYPO3_DB\']->sql_query($query);
-                $list = tx_div::makeInstance(\'tx_lib_object\');
                 if($result) {
                         while($row = $GLOBALS[\'TYPO3_DB\']->sql_fetch_assoc($result)) {
                                 $entry = new tx_lib_object($row);
-                                $list->append($entry);
+                                $this->append($entry);
                         }
                 }
-                $this->pObj->set(\'resultList\', $list);
-        }
-
-        function setConfigurations($configurations) {
-                $this->pObj->configurations = $configurations;
         }
 }
 ';
@@ -280,7 +258,7 @@ class '.$cN.'_views_'.$view[title].' extends tx_lib_'.$this->pObj->viewEngines[$
 			if(!trim($template[title])) continue;
 
 			$indexContent = '
-<?php $entryList = $this->pObj->get(\'entryList\'); ?>
+<?php $entryList = $this->get(\'entryList\'); ?>
 <?php if($entryList->isNotEmpty()): ?>
         <ol>
 <?php endif; ?>

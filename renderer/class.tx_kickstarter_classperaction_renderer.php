@@ -84,7 +84,7 @@ plugin.'.$cN.'.controllerSwitch {
 
 		$lines = array_merge($lines, $acts);
 		$lines[] = '}
-tt_content.list.20.tx_'.$extKey.' =< plugin.'.$cN.'.controllerSwitch';
+tt_content.list.20.'.$extKey.' =< plugin.'.$cN.'.controllerSwitch';
 
 		if(!$static)
 			$this->pObj->addFileToFileArray('configurations/setup.txt', implode("\n", $lines));
@@ -147,14 +147,14 @@ class '.$cN.'_controller_'.$action[title].' extends tx_lib_controller {
 
 		function main() {
                 $model = tx_div::makeInstance(\''.$model.'\');
-                $model->setConfigurations($this->pObj->configurations);
-                $model->load($this->pObj->parameters);
+                $model->setConfigurations($this->configurations);
+                $model->load($this->parameters);
                 $resultList = $model->get(\'resultList\');
                 $view = tx_div::makeInstance(\''.$view.'\');
                 $view->set(\'entryList\', $resultList);
-                $view->setController($this->pObj);
-                $view->setTemplatePath($this->pObj->configurations->get(\'templatePath\'));
-                return $view->render($this->pObj->configurations->get(\''.$template.'\'));
+                $view->setController($this);
+                $view->setTemplatePath($this->configurations->get(\'templatePath\'));
+                return $view->render($this->configurations->get(\''.$template.'\'));
 		}
 }';
 
@@ -215,11 +215,11 @@ class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
                                 $list->append($entry);
                         }
                 }
-                $this->pObj->set(\'resultList\', $list);
+                $this->set(\'resultList\', $list);
         }
 
         function setConfigurations($configurations) {
-                $this->pObj->configurations = $configurations;
+                $this->configurations = $configurations;
         }
 }
 ';
@@ -280,7 +280,7 @@ class '.$cN.'_views_'.$view[title].' extends tx_lib_'.$this->pObj->viewEngines[$
 			if(!trim($template[title])) continue;
 
 			$indexContent = '
-<?php $entryList = $this->pObj->get(\'entryList\'); ?>
+<?php $entryList = $this->get(\'entryList\'); ?>
 <?php if($entryList->isNotEmpty()): ?>
         <ol>
 <?php endif; ?>
