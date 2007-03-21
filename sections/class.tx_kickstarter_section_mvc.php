@@ -29,11 +29,15 @@
 
 require_once(t3lib_extMgm::extPath('kickstarter').'class.tx_kickstarter_sectionbase.php');
 
+require_once(t3lib_extMgm::extPath('kickstarter__mvc').'renderer/class.tx_kickstarter_classperaction_renderer.php');
+require_once(t3lib_extMgm::extPath('kickstarter__mvc').'renderer/class.tx_kickstarter_methodperaction_renderer.php');
+
 class tx_kickstarter_section_mvc extends tx_kickstarter_sectionbase {
 	var $sectionID = 'mvc';
 	var $pluginnr = -1;
 	var $viewEngines = array('phpTemplateEngine','smartyView');
-
+	var $renderer = array('classperaction', 'methodperaction');
+	var $renderer_select = array('0'=>'Single class per Action','1'=>'Method per Action in Controller');
 	/**
 	 * Renders the form in the kickstarter; this was add_cat_pi()
 	 *
@@ -104,6 +108,12 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_sectionbase {
 				'Write a description for the entry (if any):<br />'.
 				$this->renderStringBox_lang('plus_wiz_description',$ffPrefix,$piConf)
 				;
+			$lines[] = '<tr><td><hr /></td></tr>';
+			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
+
+			$subContent='<strong>Code Layout Selection</strong><br />'.
+			    $this->renderSelectBox($ffPrefix.'[code_sel]',$piConf['code_sel'],
+				$this->renderer_select);
 			$lines[] = '<tr><td><hr /></td></tr>';
 			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
 
@@ -267,12 +277,15 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_sectionbase {
 			t3lib_extMgm::addPlugin(array('".addslashes($this->getSplitLabels_reference($config,'title','tt_content.'.'list_type_pi'.$k))."', \$_EXTKEY),'list_type');
 		");
 
-		$this->generateSetup($extKey, $k, $config[plus_not_staticTemplate]);
-		$this->generateConfigClass($extKey, $k);
-		$this->generateActions($extKey, $k);
-		$this->generateModels($extKey, $k);
-		$this->generateViews($extKey, $k);
-		$this->generateTemplates($extKey, $k);
+		$renderer = t3lib_div::makeInstance('tx_kickstarter_'.($this->renderer[$config[code_sel]]).'_renderer');
+		$renderer->setParent($this);
+
+		$renderer->generateSetup($extKey, $k, $config[plus_not_staticTemplate]);
+		$renderer->generateConfigClass($extKey, $k);
+		$renderer->generateActions($extKey, $k);
+		$renderer->generateModels($extKey, $k);
+		$renderer->generateViews($extKey, $k);
+		$renderer->generateTemplates($extKey, $k);
 
 		$this->addFileToFileArray(
 			'configurations/flexform.xml',t3lib_div::getUrl(t3lib_extMgm::extPath('kickstarter__mvc').'template_flexform.xml')
@@ -366,266 +379,6 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_sectionbase {
 
         return $newFConf;
     }
-
-    /**
-     * Generates the setup.txt
-     *
-     * @param       string           $extKey: current extension key
-     * @param       integer          $k: current number of plugin 
-	 * @param       bool             $static: include template as static template
-     */
-	function generateSetup($extKey, $k, $static) {
-		$lines = array();
-		$incls = array();
-		$acts  = array();
-
-		$cN = $this->returnName($extKey,'class','');
-        $actions = $this->wizard->wizArray[$this->sectionID][$k]['actions'];
-
-		$lines[] = '
-# Common configuration
-plugin.'.$cN.'.configurations {
-  templatePath = EXT:'.$extKey.'/templates/
-}
-
-includeLibs.tx_div = EXT:div/class.tx_div.php
-includeLibs.tx_lib_switch = EXT:lib/class.tx_lib_switch.php';
-
-		foreach($actions as $action) {
-			if(!trim($action['title'])) continue;
-			$acts[] = '    '.$action['title'].' = '.($action[plus_user_obj]?'USER_INT':'USER').'
-    '.$action['title'].' {
-       userFunc = '.$cN.'_controller_'.$action[title].'->main
-       setupPath = plugin.'.$cN.'.configurations.
-    }';
-			$incls[] = 'includeLibs.'.$cN.'_controller_'.$action[title].' = '.
-				'EXT:'.$extKey.'/controllers/class.'.$cN.'_controller_'.$action[title].'.php';
-		}
-		$lines = array_merge($lines, $incls);
-
-		$lines[] = '
-# The controller switch
-plugin.'.$cN.'.controllerSwitch = USER
-plugin.'.$cN.'.controllerSwitch {
-    userFunc = tx_lib_switch->main
-';
-
-		$lines = array_merge($lines, $acts);
-		$lines[] = '}
-tt_content.list.20.tx_'.$extKey.' =< plugin.'.$cN.'.controllerSwitch';
-
-		if(!$static)
-			$this->addFileToFileArray('configurations/setup.txt', implode("\n", $lines));
-		else
-			$this->addFileToFileArray('ext_typoscript_setup.txt', implode("\n", $lines));
-	}
-
-    /**
-     * Generates the class.tx_*_configuration.php
-     *
-     * @param       string           $extKey: current extension key
-     * @param       integer          $k: current number of plugin 
-     */
-	function generateConfigClass($extKey, $k) {
-
-		$cN = $this->returnName($extKey,'class','');
-
-		$indexContent = '
-tx_div::load(\'tx_lib_configurations\');
-
-class '.$cN.'_configurations extends tx_lib_configurations {
-        var $setupPath = \'plugin.'.$cN.'.configurations.\';
-}';
-
-		$this->addFileToFileArray('configurations/class.'.$cN.'_configuration.php', 
-			$this->PHPclassFile(
-					$extKey,
-					'configurations/class.'.$cN.'_configuration.php',
-					$indexContent,
-					'Class that handles TypoScript configuration.'
-			)
-		);
-	}
-
-    /**
-     * Generates the class.tx_*_controller_*.php
-     *
-     * @param       string           $extKey: current extension key
-     * @param       integer          $k: current number of plugin 
-     */
-	function generateActions($extKey, $k) {
-
-		$cN = $this->returnName($extKey,'class','');
-
-        $actions = $this->wizard->wizArray[$this->sectionID][$k]['actions'];
-		foreach($actions as $action) {
-			if(!trim($action[title])) continue;
-
-			$tablename = $this->wizard->wizArray['tables'][$action['model']]['tablename'];
-			$model = $cN.'_model_'.$tablename;
-			$views = $this->wizard->wizArray[$this->sectionID][$k]['views'];
-			$view  = $cN.'_views_'.$views[$action[view]][title];
-			$templates = $this->wizard->wizArray[$this->sectionID][$k]['templates'];
-			$template  = $templates[$action[template]][title].'.php';
-
-			$indexContent = '
-tx_div::load(\'tx_lib_controller\');
-
-class '.$cN.'_controller_'.$action[title].' extends tx_lib_controller {
-
-		function main() {
-                $model = tx_div::makeInstance(\''.$model.'\');
-                $model->setConfigurations($this->configurations);
-                $model->load($this->parameters);
-                $resultList = $model->get(\'resultList\');
-                $view = tx_div::makeInstance(\''.$view.'\');
-                $view->set(\'entryList\', $resultList);
-                $view->setController($this);
-                $view->setTemplatePath($this->configurations->get(\'templatePath\'));
-                return $view->render($this->configurations->get(\''.$template.'\'));
-		}
-}';
-
-			$this->addFileToFileArray('controllers/class.'.$cN.'_controller_'.$action['title'].'.php', 
-				$this->PHPclassFile(
-					$extKey,
-					'controllers/class.'.$cN.'_controller_'.$action['title'].'.php',
-					$indexContent,
-					'Class that implements the controller for action '.$action['title'].'.'
-				)
-			);
-		}
-	}
-
-    /**
-     * Generates the class.tx_*_model_*.php
-     *
-     * @param       string           $extKey: current extension key
-     * @param       integer          $k: current number of plugin 
-     */
-	function generateModels($extKey, $k) {
-
-		$cN = $this->returnName($extKey,'class','');
-
-        $models = $this->wizard->wizArray[$this->sectionID][$k]['models'];
-		if(!is_array($models)) return;
-
-		foreach($models as $model) {
-			$tablename = $this->wizard->wizArray['tables'][$model['title']]['tablename'];
-			if(!trim($tablename)) continue;
-			$real_tableName = $this->returnName($extKey,'tables',$tablename);
-
-			$indexContent = '
-class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
-        var $configurations;
-
-        function load($parameters = null) {
-
-                // fix settings
-                $fields = \'*\';
-                $tables = \''.$real_tableName.'s\';
-                $groupBy = null;
-                $orderBy = \'sorting\';
-                $where = \'hidden = 0 AND deleted = 0 \';
-
-                // variable settings
-                if($parameters) {
-					// do query modifications according to incoming parameters here.
-                }
-
-                // query
-                $query = $GLOBALS[\'TYPO3_DB\']->SELECTquery($fields, $tables, $where, $groupBy, $orderBy);
-                $result = $GLOBALS[\'TYPO3_DB\']->sql_query($query);
-                $list = tx_div::makeInstance(\'tx_lib_object\');
-                if($result) {
-                        while($row = $GLOBALS[\'TYPO3_DB\']->sql_fetch_assoc($result)) {
-                                $entry = new tx_lib_object($row);
-                                $list->append($entry);
-                        }
-                }
-                $this->set(\'resultList\', $list);
-        }
-
-        function setConfigurations($configurations) {
-                $this->configurations = $configurations;
-        }
-}
-';
-			$this->addFileToFileArray('models/class.'.$cN.'_model_'.$tablename.'.php', 
-				$this->PHPclassFile(
-					$extKey,
-					'models/class.'.$cN.'_model_'.$tablename.'.php',
-					$indexContent,
-					'Class that implements the model for table '.$real_tableName.'.'
-				)
-			);
-		}
-	}
-
-    /**
-     * Generates the class.tx_*_view_*.php
-     *
-     * @param       string           $extKey: current extension key
-     * @param       integer          $k: current number of plugin 
-     */
-	function generateViews($extKey, $k) {
-
-		$cN = $this->returnName($extKey,'class','');
-
-        $views = $this->wizard->wizArray[$this->sectionID][$k]['views'];
-		foreach($views as $view) {
-			if(!trim($view[title])) continue;
-
-			$indexContent = '
-tx_div::load(\'tx_lib_'.$this->viewEngines[$view['inherit']].'\');
-
-class '.$cN.'_views_'.$view[title].' extends tx_lib_'.$this->viewEngines[$view['inherit']].' {
-}';
-
-			$this->addFileToFileArray('views/class.'.$cN.'_view_'.$view['title'].'.php', 
-				$this->PHPclassFile(
-					$extKey,
-					'views/class.'.$cN.'_view_'.$view['title'].'.php',
-					$indexContent,
-					'Class that implements the view for '.$view['title'].'.'
-				)
-			);
-		}
-	}
-
-    /**
-     * Generates the class.tx_*_template_*.php
-     *
-     * @param       string           $extKey: current extension key
-     * @param       integer          $k: current number of plugin 
-     */
-	function generateTemplates($extKey, $k) {
-
-		$cN = $this->returnName($extKey,'class','');
-
-        $templates = $this->wizard->wizArray[$this->sectionID][$k]['templates'];
-		foreach($templates as $template) {
-			if(!trim($template[title])) continue;
-
-			$indexContent = '
-<?php $entryList = $this->get(\'entryList\'); ?>
-<?php if($entryList->isNotEmpty()): ?>
-        <ol>
-<?php endif; ?>
-<?php for($entryList->rewind(); $entryList->valid(); $entryList->next()): $entry = $entryList->current();       ?>
-        <li>
-			<h3>Insert HTML/Code to display elements here</h3>
-        </li>
-<?php endfor; ?>
-<?php if($entryList->isNotEmpty()): ?>
-        </ol>
-<?php endif; ?>
-';
-
-			$this->addFileToFileArray('templates/'.$template['title'].'.php', $indexContent);
-		}
-	}
-
 }
 
 
