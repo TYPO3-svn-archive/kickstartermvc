@@ -550,6 +550,7 @@ class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
         function setConfigurations($configurations) {
                 $this->configurations = $configurations;
         }
+}
 ';
 			$this->addFileToFileArray('models/class.'.$cN.'_model_'.$tablename.'.php', 
 				$this->PHPclassFile(
