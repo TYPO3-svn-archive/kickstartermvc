@@ -274,6 +274,10 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_sectionbase {
 		$this->generateViews($extKey, $k);
 		$this->generateTemplates($extKey, $k);
 
+		$this->addFileToFileArray(
+			'configurations/flexform.xml',t3lib_div::getUrl(t3lib_extMgm::extPath('kickstarter__mvc').'template_flexform.xml')
+		);
+
 			// Add wizard?
 
 		if ($config['plus_wiz'])	{
@@ -329,10 +333,6 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_sectionbase {
 				)
 			);
 
-			$this->addFileToFileArray(
-				'configurations/flexform.xml',t3lib_div::getUrl(t3lib_extMgm::extPath('kickstarter__mvc').'template_flexform.xml')
-			);
-
 				// Add wizard icon
 			$this->addFileToFileArray('ce_wiz.gif',t3lib_div::getUrl(t3lib_extMgm::extPath('kickstarter').'res/wiz.gif'));
 
@@ -341,7 +341,6 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_sectionbase {
 				if (TYPO3_MODE=="BE")	$TBE_MODULES_EXT["xMOD_db_new_content_el"]["addElClasses"]["'.$cN.'_wizicon"] = t3lib_extMgm::extPath($_EXTKEY).\'configurations/class.'.$cN.'_wizicon.php\';
 			');
 		}
-
 	}
 
     /**
@@ -396,11 +395,11 @@ includeLibs.tx_lib_switch = EXT:lib/class.tx_lib_switch.php';
 			if(!trim($action['title'])) continue;
 			$acts[] = '    '.$action['title'].' = '.($action[plus_user_obj]?'USER_INT':'USER').'
     '.$action['title'].' {
-       userFunc = '.$cN.'_controllers_'.$action[title].'->main
+       userFunc = '.$cN.'_controller_'.$action[title].'->main
        setupPath = plugin.'.$cN.'.configurations.
     }';
-			$incls[] = 'includeLibs.'.$cN.'_controllers_'.$action[title].' = '.
-				'EXT:'.$extKey.'/controllers/class.'.$cN.'_controllers_'.$action[title].'.php';
+			$incls[] = 'includeLibs.'.$cN.'_controller_'.$action[title].' = '.
+				'EXT:'.$extKey.'/controllers/class.'.$cN.'_controller_'.$action[title].'.php';
 		}
 		$lines = array_merge($lines, $incls);
 
