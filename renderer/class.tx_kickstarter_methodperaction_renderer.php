@@ -60,12 +60,14 @@ includeLibs.'.$cN.'_controller = EXT:'.$extKey.'/controllers/class.'.$cN.'_contr
 plugin.'.$cN.'.controller = '.($actions[1][plus_user_obj]?'USER_INT':'USER').'
 plugin.'.$cN.'.controller {
   userFunc = '.$cN.'_controller->main
-  action = '.$actions[1][title].'
+  defaultAction = '.$actions[1][title].'
   templatePath = EXT:'.$extKey.'/templates/
+  entryClassName =
 }';
 
 		$lines[] = '
-tt_content.list.20.'.$extKey.' =< plugin.'.$cN.'.controller';
+tt_content.list.20.'.$extKey.' =< plugin.'.$cN.'.controller
+';
 
 		if(!$static)
 			$this->pObj->addFileToFileArray('configurations/setup.txt', implode("\n", $lines));
@@ -116,6 +118,11 @@ class '.$cN.'_configurations extends tx_lib_configurations {
 tx_div::load(\'tx_lib_controller\');
 
 class '.$cN.'_controller extends tx_lib_controller {
+
+    function '.$cN.'_controller() {
+        $this->setDefaultDesignator(\''.$cN.'\');
+    }
+
 ';
 
         $actions = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['actions'];
@@ -127,17 +134,23 @@ class '.$cN.'_controller extends tx_lib_controller {
 			$views = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['views'];
 			$view  = $cN.'_views_'.$views[$action[view]][title];
 			$templates = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['templates'];
-			$template  = $templates[$action[template]][title].'.php';
+			$template  = $templates[$action[template]][title];
 
 			$indexContent .= '
-		function '.$action[title].'() {
-                $modelClassName = tx_div::makeInstanceClassName(\''.$model.'\');
-                $viewClassName = tx_div::makeInstanceClassName(\''.$view.'\');
-				$view = new $viewClassName(new $modelClassName());
-                $view->setController($this);
-                $view->setTemplatePath($this->getConfiguration(\'templatePath\'));
-                return $view->render($this->getConfiguration(\''.$template.'\'));
-		}
+    function '.$action[title].'Action() {
+        $modelClassName = tx_div::makeInstanceClassName(\''.$model.'\');
+        $viewClassName = tx_div::makeInstanceClassName(\''.$view.'\');
+        $entryClassName = tx_div::makeInstanceClassName($this->getConfiguration(\'entryClassName\'));
+		$model = new $modelClassName();
+        $view = new $viewClassName();
+        for($model->rewind(); $model->valid(); $model->next()) {
+            $entry = new $entryClassName($model->current(), $this);
+            $view->append($entry);
+        }
+        $view->setController($this);
+        $view->setTemplatePath($this->getConfiguration(\'templatePath\'));
+        return $view->render($this->getConfiguration(\''.$template.'\'));
+    }
 ';
 
 		}
@@ -175,11 +188,11 @@ class '.$cN.'_controller extends tx_lib_controller {
 class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
 
         function '.$cN.'_model_'.$tablename.'($parameters = null) {
-				parent::tx_lib_object();
+                parent::tx_lib_object();
 
                 // fix settings
                 $fields = \'*\';
-                $tables = \''.$real_tableName.'s\';
+                $tables = \''.$real_tableName.'\';
                 $groupBy = null;
                 $orderBy = \'sorting\';
                 $where = \'hidden = 0 AND deleted = 0 \';
@@ -258,18 +271,19 @@ class '.$cN.'_views_'.$view[title].' extends tx_lib_'.$this->pObj->viewEngines[$
 			if(!trim($template[title])) continue;
 
 			$indexContent = '
-<?php $entryList = $this->get(\'entryList\'); ?>
-<?php if($entryList->isNotEmpty()): ?>
+<?php if($this->isNotEmpty() { ?>
         <ol>
-<?php endif; ?>
-<?php for($entryList->rewind(); $entryList->valid(); $entryList->next()): $entry = $entryList->current();       ?>
+<?php } ?>
+<?php for($this->rewind(); $this->valid(); $this->next()) {
+     $entry = $this->current();
+?>
         <li>
 			<h3>Insert HTML/Code to display elements here</h3>
         </li>
-<?php endfor; ?>
-<?php if($entryList->isNotEmpty()): ?>
+<?php } ?>
+<?php if($this->isNotEmpty()) { ?>
         </ol>
-<?php endif; ?>
+<?php } ?>
 ';
 
 			$this->pObj->addFileToFileArray('templates/'.$template['title'].'.php', $indexContent);

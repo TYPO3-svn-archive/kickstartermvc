@@ -84,7 +84,8 @@ plugin.'.$cN.'.controllerSwitch {
 
 		$lines = array_merge($lines, $acts);
 		$lines[] = '}
-tt_content.list.20.'.$extKey.' =< plugin.'.$cN.'.controllerSwitch';
+tt_content.list.20.'.$extKey.' =< plugin.'.$cN.'.controllerSwitch
+';
 
 		if(!$static)
 			$this->pObj->addFileToFileArray('configurations/setup.txt', implode("\n", $lines));
@@ -138,24 +139,33 @@ class '.$cN.'_configurations extends tx_lib_configurations {
 			$views = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['views'];
 			$view  = $cN.'_views_'.$views[$action[view]][title];
 			$templates = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['templates'];
-			$template  = $templates[$action[template]][title].'.php';
+			$template  = $templates[$action[template]][title];
 
 			$indexContent = '
 tx_div::load(\'tx_lib_controller\');
 
 class '.$cN.'_controller_'.$action[title].' extends tx_lib_controller {
 
-		function main() {
-                $model = tx_div::makeInstance(\''.$model.'\');
-                $model->setConfigurations($this->configurations);
-                $model->load($this->parameters);
-                $resultList = $model->get(\'resultList\');
-                $view = tx_div::makeInstance(\''.$view.'\');
-                $view->set(\'entryList\', $resultList);
-                $view->setController($this);
-                $view->setTemplatePath($this->configurations->get(\'templatePath\'));
-                return $view->render($this->configurations->get(\''.$template.'\'));
-		}
+    function '.$cN.'_controller_'.$action[title].'() {
+	    $this->setDefaultDesignator(\''.$cN.'\');
+    }
+
+    function main() {
+        $modelClassName = tx_div::makeInstanceClassName(\''.$model.'\');
+        $viewClassName = tx_div::makeInstanceClassName(\''.$view.'\');
+        $entryClassName = tx_div::makeInstanceClassName($this->getConfiguration(\'entryClassName\'));
+        $view = tx_div::makeInstance(\''.$viewClassName.'\');
+        $model = tx_div::makeInstance(\''.$modelClassName.'\');
+        $model->setConfigurations($this->configurations);
+        $model->load($this->parameters);
+        for($model->rewind(); $model->valid(); $model->next()) {
+            $entry = new $entryClassName($model->current(), $this);
+            $view->append($entry);
+        }
+        $view->setController($this);
+        $view->setTemplatePath($this->configurations->get(\'templatePath\'));
+        return $view->render($this->configurations->get(\''.$template.'\'));
+    }
 }';
 
 			$this->pObj->addFileToFileArray('controllers/class.'.$cN.'_controller_'.$action['title'].'.php', 
@@ -179,7 +189,7 @@ class '.$cN.'_controller_'.$action[title].' extends tx_lib_controller {
 
 		$cN = $this->pObj->returnName($extKey,'class','');
 
-        $models = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['models'];
+		$models = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['models'];
 		if(!is_array($models)) return;
 
 		foreach($models as $model) {
@@ -195,7 +205,7 @@ class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
 
                 // fix settings
                 $fields = \'*\';
-                $tables = \''.$real_tableName.'s\';
+                $tables = \''.$real_tableName.'\';
                 $groupBy = null;
                 $orderBy = \'sorting\';
                 $where = \'hidden = 0 AND deleted = 0 \';
@@ -208,14 +218,12 @@ class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
                 // query
                 $query = $GLOBALS[\'TYPO3_DB\']->SELECTquery($fields, $tables, $where, $groupBy, $orderBy);
                 $result = $GLOBALS[\'TYPO3_DB\']->sql_query($query);
-                $list = tx_div::makeInstance(\'tx_lib_object\');
                 if($result) {
                         while($row = $GLOBALS[\'TYPO3_DB\']->sql_fetch_assoc($result)) {
                                 $entry = new tx_lib_object($row);
-                                $list->append($entry);
+                                $this->append($entry);
                         }
                 }
-                $this->set(\'resultList\', $list);
         }
 
         function setConfigurations($configurations) {
@@ -280,18 +288,19 @@ class '.$cN.'_views_'.$view[title].' extends tx_lib_'.$this->pObj->viewEngines[$
 			if(!trim($template[title])) continue;
 
 			$indexContent = '
-<?php $entryList = $this->get(\'entryList\'); ?>
-<?php if($entryList->isNotEmpty()): ?>
+<?php if($this->isNotEmpty()) { ?>
         <ol>
-<?php endif; ?>
-<?php for($entryList->rewind(); $entryList->valid(); $entryList->next()): $entry = $entryList->current();       ?>
+<?php } ?>
+<?php for($this->rewind(); $this->valid(); $this->next()) { 
+    $entry = $this->current();
+?>
         <li>
 			<h3>Insert HTML/Code to display elements here</h3>
         </li>
-<?php endfor; ?>
-<?php if($entryList->isNotEmpty()): ?>
+<?php } ?>
+<?php if($this->isNotEmpty()) { ?>
         </ol>
-<?php endif; ?>
+<?php } ?>
 ';
 
 			$this->pObj->addFileToFileArray('templates/'.$template['title'].'.php', $indexContent);

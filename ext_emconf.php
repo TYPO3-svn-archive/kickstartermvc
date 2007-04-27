@@ -3,7 +3,7 @@
 ########################################################################
 # Extension Manager/Repository config file for ext: "kickstarter__mvc"
 #
-# Auto generated 24-01-2007 15:37
+# Auto generated 26-04-2007 09:50
 #
 # Manual updates:
 # Only the data in the array - anything else is removed by next write.
@@ -12,36 +12,35 @@
 
 $EM_CONF[$_EXTKEY] = array(
 	'title' => 'Kickstarter for lib/div',
-	'description' => '',
+	'description' => 'A kickstarter plugin that generates code for the lib/div extension development framework.',
 	'category' => 'be',
-	'author' => 'Christian Welzel',
-	'author_email' => 'gawain@camlann.de',
-	'shy' => '',
-	'dependencies' => 'kickstarter',
+	'shy' => 0,
+	'version' => '0.0.1',
+	'dependencies' => '',
 	'conflicts' => '',
 	'priority' => '',
+	'loadOrder' => '',
 	'module' => '',
 	'state' => 'alpha',
-	'internal' => '',
 	'uploadfolder' => 0,
 	'createDirs' => '',
 	'modify_tables' => '',
-	'clearCacheOnLoad' => 0,
+	'clearcacheonload' => 0,
 	'lockType' => '',
+	'author' => 'Christian Welzel',
+	'author_email' => 'gawain@camlann.de',
 	'author_company' => 'schech.net',
-	'version' => '0.0.1',
+	'CGLcompliance' => '',
+	'CGLcompliance_note' => '',
 	'constraints' => array(
 		'depends' => array(
-			'kickstarter' => '0.3.8',
 		),
 		'conflicts' => array(
 		),
 		'suggests' => array(
 		),
 	),
-	'_md5_values_when_last_written' => 'a:7:{s:9:"ChangeLog";s:4:"0529";s:10:"README.txt";s:4:"ee2d";s:12:"ext_icon.gif";s:4:"1bdc";s:17:"ext_localconf.php";s:4:"e6ac";s:19:"doc/wizard_form.dat";s:4:"db58";s:20:"doc/wizard_form.html";s:4:"1d08";s:45:"sections/class.tx_kickstarter_section_mvc.php";s:4:"cb96";}',
-	'suggests' => array(
-	),
+	'_md5_values_when_last_written' => 'a:10:{s:9:"ChangeLog";s:4:"0529";s:10:"README.txt";s:4:"ee2d";s:12:"ext_icon.gif";s:4:"1bdc";s:17:"ext_localconf.php";s:4:"b642";s:21:"template_flexform.xml";s:4:"fa28";s:19:"doc/wizard_form.dat";s:4:"db58";s:20:"doc/wizard_form.html";s:4:"1d08";s:45:"sections/class.tx_kickstarter_section_mvc.php";s:4:"3442";s:57:"renderer/class.tx_kickstarter_classperaction_renderer.php";s:4:"0282";s:58:"renderer/class.tx_kickstarter_methodperaction_renderer.php";s:4:"54f2";}',
 );
 
 ?>
