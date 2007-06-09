@@ -1,5 +1,7 @@
-(add new changes on top of this file)
+07-06-09 Christian Welzel  <gawain@camlann.de>
+
+	* 0.0.2: several changes to code generation
 
 07-01-16 Christian Welzel  <gawain@camlann.de>
 
-	* Initial release
+	* 0.0.1: Initial release

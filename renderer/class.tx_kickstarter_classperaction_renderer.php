@@ -137,7 +137,7 @@ class '.$cN.'_configurations extends tx_lib_configurations {
 			$tablename = $this->pObj->wizard->wizArray['tables'][$action['model']]['tablename'];
 			$model = $cN.'_model_'.$tablename;
 			$views = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['views'];
-			$view  = $cN.'_views_'.$views[$action[view]][title];
+			$view  = $cN.'_view_'.$views[$action[view]][title];
 			$templates = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['templates'];
 			$template  = $templates[$action[template]][title];
 
@@ -259,7 +259,7 @@ class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
 			$indexContent = '
 tx_div::load(\'tx_lib_'.$this->pObj->viewEngines[$view['inherit']].'\');
 
-class '.$cN.'_views_'.$view[title].' extends tx_lib_'.$this->pObj->viewEngines[$view['inherit']].' {
+class '.$cN.'_view_'.$view[title].' extends tx_lib_'.$this->pObj->viewEngines[$view['inherit']].' {
 }';
 
 			$this->pObj->addFileToFileArray('views/class.'.$cN.'_view_'.$view['title'].'.php', 
