@@ -129,7 +129,10 @@ class '.$cN.'_controller extends tx_lib_controller {
 		foreach($actions as $action) {
 			if(!trim($action[title])) continue;
 
-			$tablename = $this->pObj->wizard->wizArray['tables'][$action['model']]['tablename'];
+            if(!empty($this->pObj->wizard->wizArray['tables'][$action['model']]['tablename']))
+			    $tablename = $this->pObj->wizard->wizArray['tables'][$action['model']]['tablename'];
+            else
+                $tablename = $action['model'];
 			$model = $cN.'_model_'.$tablename;
 			$views = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['views'];
 			$view  = $cN.'_view_'.$views[$action[view]][title];
@@ -180,7 +183,10 @@ class '.$cN.'_controller extends tx_lib_controller {
 		if(!is_array($models)) return;
 
 		foreach($models as $model) {
-			$tablename = $this->pObj->wizard->wizArray['tables'][$model['title']]['tablename'];
+            if(!empty($this->pObj->wizard->wizArray['tables'][$model['title']]['tablename']))
+			    $tablename = $this->pObj->wizard->wizArray['tables'][$model['title']]['tablename'];
+            else
+                $tablename = $model['title'];
 			if(!trim($tablename)) continue;
 			$real_tableName = $this->pObj->returnName($extKey,'tables',$tablename);
 

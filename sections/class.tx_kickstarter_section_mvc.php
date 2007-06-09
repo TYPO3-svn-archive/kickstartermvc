@@ -173,7 +173,10 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_sectionbase {
                 foreach($piConf['models'] as $k => $v)  {
                      $c[] = $k;
                      $subContent= '&nbsp;(Remove:&nbsp;'.$this->renderCheckBox($ffPrefix.'[models]['.$k.'][_DELETE]',0).')';
-                     $lines[] = '<tr'.$this->bgCol(2).'><td>'.$this->fw('<strong>Model:</strong> <em>'.$this->wizard->wizArray['tables'][$v['title']]['tablename'].'</em>').$this->fw($subContent).'</td></tr>';
+                     if(!empty($this->wizard->wizArray['tables'][$v['title']]['tablename']))
+                        $lines[] = '<tr'.$this->bgCol(2).'><td>'.$this->fw('<strong>Model:</strong> <em>'.$this->wizard->wizArray['tables'][$v['title']]['tablename'].'</em>').$this->fw($subContent).'</td></tr>';
+                     else
+                        $lines[] = '<tr'.$this->bgCol(2).'><td>'.$this->fw('<strong>Model:</strong> <em>'.$v['title'].'</em>').$this->fw($subContent).'</td></tr>';
                 }
             }
 
@@ -195,10 +198,16 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_sectionbase {
 				$subContent=$this->renderSelectBox($ffPrefix.'[models]['.$k.'][title]',$piConf[models]['.$k.'][title],$optValues);
                 $lines[] = '<tr'.$this->bgCol(3).'><td>For table: '.$this->fw($subContent).'</td></tr>';
 			}
+            $lines[] = '<tr><td>Named model: '.$this->renderStringBox($ffPrefix.'[models]['.$k.'][title]','').'</td></tr>';
 
 
 			$modelValues = array();
-			foreach($piConf['models'] as $vv) $modelValues[$vv[title]] = $this->wizard->wizArray['tables'][$vv['title']]['tablename'];
+			foreach($piConf['models'] as $vv) { 
+                if(!empty($this->wizard->wizArray['tables'][$vv['title']]['tablename']))
+                    $modelValues[$vv[title]] = $this->wizard->wizArray['tables'][$vv['title']]['tablename'];
+                else
+                    $modelValues[$vv[title]] = $vv['title'];
+            }
 			$viewValues = array();
 			foreach($piConf['views'] as $key => $vv) $viewValues[$key] = $vv[title];
 			$templValues = array();
