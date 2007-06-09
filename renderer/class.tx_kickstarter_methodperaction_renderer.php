@@ -146,6 +146,7 @@ class '.$cN.'_controller extends tx_lib_controller {
         $entryClassName = tx_div::makeInstanceClassName($this->getConfiguration(\'entryClassName\'));
 		$model = new $modelClassName();
         $view = new $viewClassName();
+		$model->load();
         for($model->rewind(); $model->valid(); $model->next()) {
             $entry = new $entryClassName($model->current(), $this);
             $view->append($entry);
@@ -195,6 +196,9 @@ class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
 
         function '.$cN.'_model_'.$tablename.'($parameters = null) {
                 parent::tx_lib_object();
+        }
+
+        function load($parameters = null) {
 
                 // fix settings
                 $fields = \'*\';
