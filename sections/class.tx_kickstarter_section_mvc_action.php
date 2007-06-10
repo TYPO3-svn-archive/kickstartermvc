@@ -57,11 +57,14 @@ class tx_kickstarter_section_mvc_action extends tx_kickstarter_section_mvc_base 
             $lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
 
             $modelValues = array();
-            foreach($this->wizard->wizArray['mvcmodel'] as $key => $vv) $modelValues[$key] = $vv[title];
+            if(is_array($this->wizard->wizArray['mvcmodel']))
+                foreach($this->wizard->wizArray['mvcmodel'] as $key => $vv) $modelValues[$key] = $vv[title];
             $viewValues = array();
-            foreach($this->wizard->wizArray['mvcview'] as $key => $vv) $viewValues[$key] = $vv[title];
+            if(is_array($this->wizard->wizArray['mvcview']))
+                foreach($this->wizard->wizArray['mvcview'] as $key => $vv) $viewValues[$key] = $vv[title];
             $templValues = array();
-            foreach($this->wizard->wizArray['mvctemplate'] as $key => $vv) $templValues[$key] = $vv[title];
+            if(is_array($this->wizard->wizArray['mvctemplate']))
+                foreach($this->wizard->wizArray['mvctemplate'] as $key => $vv) $templValues[$key] = $vv[title];
 
             $lines[] = '<tr><td><strong>Make this a non-cached Action.</strong></td></tr>';
 			$lines[] = '<tr><td>'.$this->renderCheckBox($ffPrefix.'[plus_user_obj]', $piConf[plus_user_obj]).'</td></tr>';

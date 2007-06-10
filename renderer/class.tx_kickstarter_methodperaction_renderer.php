@@ -27,17 +27,9 @@
  * @author  Christian Welzel <gawain@camlann.de>
  */
 
-class tx_kickstarter_methodperaction_renderer {
+require_once(t3lib_extMgm::extPath('kickstarter__mvc').'renderer/class.tx_kickstarter_renderer_base.php');
 
-	var $pObj;
-
-	function tx_kickstarter_methodperaction_renderer($pObj = 0) {
-		$this->pObj = $pObj;
-	}
-
-   function setParent($pObj) {
-        $this->pObj = $pObj;
-    }
+class tx_kickstarter_methodperaction_renderer extends tx_kickstarter_renderer_base {
 
     /**
      * Generates the setup.txt
@@ -60,7 +52,7 @@ includeLibs.'.$cN.'_controller = EXT:'.$extKey.'/controllers/class.'.$cN.'_contr
 plugin.'.$cN.'.controller = '.($actions[1][plus_user_obj]?'USER_INT':'USER').'
 plugin.'.$cN.'.controller {
   userFunc = '.$cN.'_controller->main
-  defaultAction = '.$actions[1][title].'
+  defaultAction = '.$this->generateName($actions[1][title],0,0,$actions[1][freename]).'
   templatePath = EXT:'.$extKey.'/templates/
   entryClassName =
 }';
@@ -82,26 +74,6 @@ tt_content.list.20.'.$extKey.' =< plugin.'.$cN.'.controller
      * @param       integer          $k: current number of plugin 
      */
 	function generateConfigClass($extKey, $k) {
-
-/*
-		$cN = $this->pObj->returnName($extKey,'class','');
-
-		$indexContent = '
-tx_div::load(\'tx_lib_configurations\');
-
-class '.$cN.'_configurations extends tx_lib_configurations {
-        var $setupPath = \'plugin.'.$cN.'.configurations.\';
-}';
-
-		$this->pObj->addFileToFileArray('configurations/class.'.$cN.'_configuration.php', 
-			$this->pObj->PHPclassFile(
-					$extKey,
-					'configurations/class.'.$cN.'_configuration.php',
-					$indexContent,
-					'Class that handles TypoScript configuration.'
-			)
-		);
-*/
 	}
 
     /**
@@ -127,25 +99,35 @@ class '.$cN.'_controller extends tx_lib_controller {
 
         $actions = $this->pObj->wizard->wizArray['mvcaction'];
 		foreach($actions as $action) {
-			if(!trim($action[title])) continue;
+            $action_title = $this->generateName($action[title],0,0,$action[freename]);
+			if(!trim($action_title)) continue;
 
-            if(!empty($this->pObj->wizard->wizArray['tables'][$action['model']]['tablename']))
-			    $tablename = $this->pObj->wizard->wizArray['tables'][$action['model']]['tablename'];
-            else
-                $tablename = $this->pObj->wizard->wizArray['mvcmodel'][$action['model']]['title'];
-			$model = $cN.'_model_'.$tablename;
-			$views = $this->pObj->wizard->wizArray['mvcview'];
-			$view  = $cN.'_view_'.$views[$action[view]][title];
-			$templates = $this->pObj->wizard->wizArray['mvctemplate'];
-			$template  = $templates[$action[template]][title];
+            $model = $this->generateName(
+                    $this->pObj->wizard->wizArray['tables'][$action['model']][tablename],
+                    $this->pObj->wizard->wizArray['mvcmodel'][$action['model']][title],
+                    $cN.'_model_',
+                    $this->pObj->wizard->wizArray['mvcmodel'][$action['model']][freename]
+            );
+            $view  = $this->generateName(
+                    $this->pObj->wizard->wizArray['mvcview'][$action[view]][title],
+                    0,
+                    $cN.'_view_',
+                    $this->pObj->wizard->wizArray['mvcview'][$action[view]][freename]
+            );
+            $template  = $this->generateName(
+                    $this->pObj->wizard->wizArray['mvctemplate'][$action[template]][title],
+                    0,
+                    0,
+                    $this->pObj->wizard->wizArray['mvctemplate'][$action[template]][freename]
+            );
 
 			$indexContent .= '
-    function '.$action[title].'Action() {
+    function '.$action_title.'Action() {
         $modelClassName = tx_div::makeInstanceClassName(\''.$model.'\');
         $viewClassName = tx_div::makeInstanceClassName(\''.$view.'\');
         $entryClassName = tx_div::makeInstanceClassName($this->getConfiguration(\'entryClassName\'));
-		$model = new $modelClassName();
-        $view = new $viewClassName();
+        $view = tx_div::makeInstance($viewClassName);
+        $model = tx_div::makeInstance($modelClassName);
 		$model->load();
         for($model->rewind(); $model->valid(); $model->next()) {
             $entry = new $entryClassName($model->current(), $this);
@@ -184,10 +166,12 @@ class '.$cN.'_controller extends tx_lib_controller {
 		if(!is_array($models)) return;
 
 		foreach($models as $model) {
-            if(!empty($this->pObj->wizard->wizArray['tables'][$model['title']]['tablename']))
-			    $tablename = $this->pObj->wizard->wizArray['tables'][$model['title']]['tablename'];
-            else
-                $tablename = $model['title'];
+            $tablename = $this->generateName(
+                $this->pObj->wizard->wizArray['tables'][$model['title']]['tablename'],
+                $model['title'],
+                0,
+                $model[freename]
+            );
 			if(!trim($tablename)) continue;
 			$real_tableName = $this->pObj->returnName($extKey,'tables',$tablename);
 
@@ -247,20 +231,21 @@ class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
 
         $views = $this->pObj->wizard->wizArray['mvcview'];
 		foreach($views as $view) {
-			if(!trim($view[title])) continue;
+            $view_title = $this->generateName($view[title],0,0,$view[freename]);
+			if(!trim($view_title)) continue;
 
 			$indexContent = '
 tx_div::load(\'tx_lib_'.$this->pObj->viewEngines[$view['inherit']].'\');
 
-class '.$cN.'_view_'.$view[title].' extends tx_lib_'.$this->pObj->viewEngines[$view['inherit']].' {
+class '.$cN.'_view_'.$view_title.' extends tx_lib_'.$this->pObj->viewEngines[$view['inherit']].' {
 }';
 
-			$this->pObj->addFileToFileArray('views/class.'.$cN.'_view_'.$view['title'].'.php', 
+			$this->pObj->addFileToFileArray('views/class.'.$cN.'_view_'.$view_title.'.php', 
 				$this->pObj->PHPclassFile(
 					$extKey,
-					'views/class.'.$cN.'_view_'.$view['title'].'.php',
+					'views/class.'.$cN.'_view_'.$view_title.'.php',
 					$indexContent,
-					'Class that implements the view for '.$view['title'].'.'
+					'Class that implements the view for '.$view_title.'.'
 				)
 			);
 		}
@@ -278,7 +263,8 @@ class '.$cN.'_view_'.$view[title].' extends tx_lib_'.$this->pObj->viewEngines[$v
 
         $templates = $this->pObj->wizard->wizArray['mvctemplate'];
 		foreach($templates as $template) {
-			if(!trim($template[title])) continue;
+            $template_title = $this->generateName($template[title],0,0,$template[freename]);
+			if(!trim($template_title)) continue;
 
 			$indexContent = '
 <?php if($this->isNotEmpty() { ?>
@@ -296,7 +282,7 @@ class '.$cN.'_view_'.$view[title].' extends tx_lib_'.$this->pObj->viewEngines[$v
 <?php } ?>
 ';
 
-			$this->pObj->addFileToFileArray('templates/'.$template['title'].'.php', $indexContent);
+			$this->pObj->addFileToFileArray('templates/'.$template_title.'.php', $indexContent);
 		}
 	}
 

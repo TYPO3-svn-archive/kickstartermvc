@@ -27,17 +27,9 @@
  * @author  Christian Welzel <gawain@camlann.de>
  */
 
-class tx_kickstarter_classperaction_renderer {
+require_once(t3lib_extMgm::extPath('kickstarter__mvc').'renderer/class.tx_kickstarter_renderer_base.php');
 
-	var $pObj;
-
-	function tx_kickstarter_classperaction_renderer($pObj = 0) {
-		$this->pObj = $pObj;
-	}
-
-	function setParent($pObj) {
-		$this->pObj = $pObj;
-	}
+class tx_kickstarter_classperaction_renderer extends tx_kickstarter_renderer_base {
 
     /**
      * Generates the setup.txt
@@ -52,7 +44,6 @@ class tx_kickstarter_classperaction_renderer {
 		$acts  = array();
 
 		$cN = $this->pObj->returnName($extKey,'class','');
-        $actions = $this->pObj->wizard->wizArray['mvcaction'];
 
 		$lines[] = '
 # Common configuration
@@ -63,9 +54,11 @@ plugin.'.$cN.'.configurations {
 includeLibs.tx_div = EXT:div/class.tx_div.php
 includeLibs.tx_lib_switch = EXT:lib/class.tx_lib_switch.php';
 
+        $actions = $this->pObj->wizard->wizArray['mvcaction'];
 		foreach($actions as $action) {
-            $action_title = $action['title'];
+            $action_title = $this->generateName($action['title'],0,0,$action[freename]);
 			if(!trim($action_title)) continue;
+
 			$acts[] = '    '.$action_title.' = '.($action[plus_user_obj]?'USER_INT':'USER').'
     '.$action_title.' {
        userFunc = '.$cN.'_controller_'.$action_title.'->main
@@ -133,18 +126,27 @@ class '.$cN.'_configurations extends tx_lib_configurations {
 
         $actions = $this->pObj->wizard->wizArray['mvcaction'];
 		foreach($actions as $action) {
-            $action_title = $action['title'];
+            $action_title = $this->generateName($action['title'],0,0,$action[freename]);
 			if(!trim($action_title)) continue;
 
-            if(!empty($this->pObj->wizard->wizArray['tables'][$action['model']]['tablename']))
-			    $tablename = $this->pObj->wizard->wizArray['tables'][$action['model']]['tablename'];
-            else
-                $tablename = $this->pObj->wizard->wizArray['mvcmodel'][$action['model']][title];
-			$model = $cN.'_model_'.$tablename;
-			$views = $this->pObj->wizard->wizArray['mvcview'];
-			$view  = $cN.'_view_'.$views[$action[view]][title];
-			$templates = $this->pObj->wizard->wizArray['mvctemplate'];
-			$template  = $templates[$action[template]][title];
+            $model = $this->generateName(
+                    $this->pObj->wizard->wizArray['tables'][$action['model']][tablename],
+                    $this->pObj->wizard->wizArray['mvcmodel'][$action['model']][title],
+                    $cN.'_model_',
+                    $this->pObj->wizard->wizArray['mvcmodel'][$action['model']][freename]
+            );
+			$view  = $this->generateName(
+                    $this->pObj->wizard->wizArray['mvcview'][$action[view]][title],
+                    0,
+                    $cN.'_view_',
+                    $this->pObj->wizard->wizArray['mvcview'][$action[view]][freename]
+            );
+			$template  = $this->generateName(
+                    $this->pObj->wizard->wizArray['mvctemplate'][$action[template]][title],
+                    0,
+                    0,
+                    $this->pObj->wizard->wizArray['mvctemplate'][$action[template]][freename]
+            );
 
 			$indexContent = '
 tx_div::load(\'tx_lib_controller\');
@@ -196,13 +198,13 @@ class '.$cN.'_controller_'.$action_title.' extends tx_lib_controller {
 		$cN = $this->pObj->returnName($extKey,'class','');
 
 		$models = $this->pObj->wizard->wizArray['mvcmodel'];
-		if(!is_array($models)) return;
-
 		foreach($models as $model) {
-            if(!empty($this->pObj->wizard->wizArray['tables'][$model['title']]['tablename']))
-			    $tablename = $this->pObj->wizard->wizArray['tables'][$model['title']]['tablename'];
-            else
-                $tablename = $model['title'];
+            $tablename = $this->generateName(
+			    $this->pObj->wizard->wizArray['tables'][$model['title']]['tablename'],
+                $model['title'],
+                0,
+                $model[freename]
+            );
 			if(!trim($tablename)) continue;
 			$real_tableName = $this->pObj->returnName($extKey,'tables',$tablename);
 
@@ -263,20 +265,21 @@ class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
 
         $views = $this->pObj->wizard->wizArray['mvcview'];
 		foreach($views as $view) {
-			if(!trim($view[title])) continue;
+            $view_title = $this->generateName($view[title],0,0,$view[freename]);
+			if(!trim($view_title)) continue;
 
 			$indexContent = '
 tx_div::load(\'tx_lib_'.$this->pObj->viewEngines[$view['inherit']].'\');
 
-class '.$cN.'_view_'.$view[title].' extends tx_lib_'.$this->pObj->viewEngines[$view['inherit']].' {
+class '.$cN.'_view_'.$view_title.' extends tx_lib_'.$this->pObj->viewEngines[$view['inherit']].' {
 }';
 
-			$this->pObj->addFileToFileArray('views/class.'.$cN.'_view_'.$view['title'].'.php', 
+			$this->pObj->addFileToFileArray('views/class.'.$cN.'_view_'.$view_title.'.php', 
 				$this->pObj->PHPclassFile(
 					$extKey,
-					'views/class.'.$cN.'_view_'.$view['title'].'.php',
+					'views/class.'.$cN.'_view_'.$view_title.'.php',
 					$indexContent,
-					'Class that implements the view for '.$view['title'].'.'
+					'Class that implements the view for '.$view_title.'.'
 				)
 			);
 		}
@@ -294,7 +297,8 @@ class '.$cN.'_view_'.$view[title].' extends tx_lib_'.$this->pObj->viewEngines[$v
 
         $templates = $this->pObj->wizard->wizArray['mvctemplate'];
 		foreach($templates as $template) {
-			if(!trim($template[title])) continue;
+            $template_title = $this->generateName($template[title], 0, 0, $template[freename]);
+			if(!trim($template_title)) continue;
 
 			$indexContent = '
 <?php if($this->isNotEmpty()) { ?>
@@ -312,7 +316,7 @@ class '.$cN.'_view_'.$view[title].' extends tx_lib_'.$this->pObj->viewEngines[$v
 <?php } ?>
 ';
 
-			$this->pObj->addFileToFileArray('templates/'.$template['title'].'.php', $indexContent);
+			$this->pObj->addFileToFileArray('templates/'.$template_title.'.php', $indexContent);
 		}
 	}
 
