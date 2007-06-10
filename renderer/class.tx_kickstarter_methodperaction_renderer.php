@@ -50,7 +50,7 @@ class tx_kickstarter_methodperaction_renderer {
 		$lines = array();
 
 		$cN = $this->pObj->returnName($extKey,'class','');
-        $actions = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['actions'];
+        $actions = $this->pObj->wizard->wizArray['mvcaction'];
 
 		$lines[] = '
 includeLibs.tx_div = EXT:div/class.tx_div.php
@@ -125,18 +125,18 @@ class '.$cN.'_controller extends tx_lib_controller {
 
 ';
 
-        $actions = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['actions'];
+        $actions = $this->pObj->wizard->wizArray['mvcaction'];
 		foreach($actions as $action) {
 			if(!trim($action[title])) continue;
 
             if(!empty($this->pObj->wizard->wizArray['tables'][$action['model']]['tablename']))
 			    $tablename = $this->pObj->wizard->wizArray['tables'][$action['model']]['tablename'];
             else
-                $tablename = $action['model'];
+                $tablename = $this->pObj->wizard->wizArray['mvcmodel'][$action['model']]['title'];
 			$model = $cN.'_model_'.$tablename;
-			$views = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['views'];
+			$views = $this->pObj->wizard->wizArray['mvcview'];
 			$view  = $cN.'_view_'.$views[$action[view]][title];
-			$templates = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['templates'];
+			$templates = $this->pObj->wizard->wizArray['mvctemplate'];
 			$template  = $templates[$action[template]][title];
 
 			$indexContent .= '
@@ -180,7 +180,7 @@ class '.$cN.'_controller extends tx_lib_controller {
 
 		$cN = $this->pObj->returnName($extKey,'class','');
 
-        $models = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['models'];
+        $models = $this->pObj->wizard->wizArray['mvcmodel'];
 		if(!is_array($models)) return;
 
 		foreach($models as $model) {
@@ -245,7 +245,7 @@ class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
 
 		$cN = $this->pObj->returnName($extKey,'class','');
 
-        $views = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['views'];
+        $views = $this->pObj->wizard->wizArray['mvcview'];
 		foreach($views as $view) {
 			if(!trim($view[title])) continue;
 
@@ -276,7 +276,7 @@ class '.$cN.'_view_'.$view[title].' extends tx_lib_'.$this->pObj->viewEngines[$v
 
 		$cN = $this->pObj->returnName($extKey,'class','');
 
-        $templates = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['templates'];
+        $templates = $this->pObj->wizard->wizArray['mvctemplate'];
 		foreach($templates as $template) {
 			if(!trim($template[title])) continue;
 

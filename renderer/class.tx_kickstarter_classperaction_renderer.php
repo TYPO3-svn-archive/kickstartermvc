@@ -52,7 +52,7 @@ class tx_kickstarter_classperaction_renderer {
 		$acts  = array();
 
 		$cN = $this->pObj->returnName($extKey,'class','');
-        $actions = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['actions'];
+        $actions = $this->pObj->wizard->wizArray['mvcaction'];
 
 		$lines[] = '
 # Common configuration
@@ -64,14 +64,15 @@ includeLibs.tx_div = EXT:div/class.tx_div.php
 includeLibs.tx_lib_switch = EXT:lib/class.tx_lib_switch.php';
 
 		foreach($actions as $action) {
-			if(!trim($action['title'])) continue;
-			$acts[] = '    '.$action['title'].' = '.($action[plus_user_obj]?'USER_INT':'USER').'
-    '.$action['title'].' {
-       userFunc = '.$cN.'_controller_'.$action[title].'->main
+            $action_title = $action['title'];
+			if(!trim($action_title)) continue;
+			$acts[] = '    '.$action_title.' = '.($action[plus_user_obj]?'USER_INT':'USER').'
+    '.$action_title.' {
+       userFunc = '.$cN.'_controller_'.$action_title.'->main
        setupPath = plugin.'.$cN.'.configurations.
     }';
-			$incls[] = 'includeLibs.'.$cN.'_controller_'.$action[title].' = '.
-				'EXT:'.$extKey.'/controllers/class.'.$cN.'_controller_'.$action[title].'.php';
+			$incls[] = 'includeLibs.'.$cN.'_controller_'.$action_title.' = '.
+				'EXT:'.$extKey.'/controllers/class.'.$cN.'_controller_'.$action_title.'.php';
 		}
 		$lines = array_merge($lines, $incls);
 
@@ -130,26 +131,27 @@ class '.$cN.'_configurations extends tx_lib_configurations {
 
 		$cN = $this->pObj->returnName($extKey,'class','');
 
-        $actions = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['actions'];
+        $actions = $this->pObj->wizard->wizArray['mvcaction'];
 		foreach($actions as $action) {
-			if(!trim($action[title])) continue;
+            $action_title = $action['title'];
+			if(!trim($action_title)) continue;
 
             if(!empty($this->pObj->wizard->wizArray['tables'][$action['model']]['tablename']))
 			    $tablename = $this->pObj->wizard->wizArray['tables'][$action['model']]['tablename'];
             else
-                $tablename = $action['model'];
+                $tablename = $this->pObj->wizard->wizArray['mvcmodel'][$action['model']][title];
 			$model = $cN.'_model_'.$tablename;
-			$views = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['views'];
+			$views = $this->pObj->wizard->wizArray['mvcview'];
 			$view  = $cN.'_view_'.$views[$action[view]][title];
-			$templates = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['templates'];
+			$templates = $this->pObj->wizard->wizArray['mvctemplate'];
 			$template  = $templates[$action[template]][title];
 
 			$indexContent = '
 tx_div::load(\'tx_lib_controller\');
 
-class '.$cN.'_controller_'.$action[title].' extends tx_lib_controller {
+class '.$cN.'_controller_'.$action_title.' extends tx_lib_controller {
 
-    function '.$cN.'_controller_'.$action[title].'() {
+    function '.$cN.'_controller_'.$action_title.'() {
 	    $this->setDefaultDesignator(\''.$cN.'\');
     }
 
@@ -157,8 +159,8 @@ class '.$cN.'_controller_'.$action[title].' extends tx_lib_controller {
         $modelClassName = tx_div::makeInstanceClassName(\''.$model.'\');
         $viewClassName = tx_div::makeInstanceClassName(\''.$view.'\');
         $entryClassName = tx_div::makeInstanceClassName($this->getConfiguration(\'entryClassName\'));
-        $view = tx_div::makeInstance(\''.$viewClassName.'\');
-        $model = tx_div::makeInstance(\''.$modelClassName.'\');
+        $view = tx_div::makeInstance($viewClassName);
+        $model = tx_div::makeInstance($modelClassName);
         $model->setConfigurations($this->configurations);
         $model->load($this->parameters);
         for($model->rewind(); $model->valid(); $model->next()) {
@@ -171,12 +173,13 @@ class '.$cN.'_controller_'.$action[title].' extends tx_lib_controller {
     }
 }';
 
-			$this->pObj->addFileToFileArray('controllers/class.'.$cN.'_controller_'.$action['title'].'.php', 
+			$this->pObj->addFileToFileArray('controllers/class.'.$cN.'_controller_'.$action_title.'.php', 
 				$this->pObj->PHPclassFile(
 					$extKey,
-					'controllers/class.'.$cN.'_controller_'.$action['title'].'.php',
+					'controllers/class.'.$cN.'_controller_'.$action_title.'.php',
 					$indexContent,
-					'Class that implements the controller for action '.$action['title'].'.'
+					'Class that implements the controller for action "'.$action_title.'".'."\n".
+                    $action[description]
 				)
 			);
 		}
@@ -192,7 +195,7 @@ class '.$cN.'_controller_'.$action[title].' extends tx_lib_controller {
 
 		$cN = $this->pObj->returnName($extKey,'class','');
 
-		$models = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['models'];
+		$models = $this->pObj->wizard->wizArray['mvcmodel'];
 		if(!is_array($models)) return;
 
 		foreach($models as $model) {
@@ -258,7 +261,7 @@ class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
 
 		$cN = $this->pObj->returnName($extKey,'class','');
 
-        $views = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['views'];
+        $views = $this->pObj->wizard->wizArray['mvcview'];
 		foreach($views as $view) {
 			if(!trim($view[title])) continue;
 
@@ -289,7 +292,7 @@ class '.$cN.'_view_'.$view[title].' extends tx_lib_'.$this->pObj->viewEngines[$v
 
 		$cN = $this->pObj->returnName($extKey,'class','');
 
-        $templates = $this->pObj->wizard->wizArray[$this->pObj->sectionID][$k]['templates'];
+        $templates = $this->pObj->wizard->wizArray['mvctemplate'];
 		foreach($templates as $template) {
 			if(!trim($template[title])) continue;
 
