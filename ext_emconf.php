@@ -12,11 +12,11 @@
 
 $EM_CONF[$_EXTKEY] = array(
 	'title' => 'Kickstarter for lib/div',
-	'description' => 'A kickstarter plugin that generates code for the lib/div extension development framework.',
+	'description' => 'A plugin to the kickstarter that generates code for the lib/div extension development framework of ECT.',
 	'category' => 'be',
 	'shy' => 0,
 	'version' => '0.0.4',
-	'dependencies' => '',
+	'dependencies' => 'kickstarter',
 	'conflicts' => '',
 	'priority' => '',
 	'loadOrder' => '',
@@ -34,6 +34,7 @@ $EM_CONF[$_EXTKEY] = array(
 	'CGLcompliance_note' => '',
 	'constraints' => array(
 		'depends' => array(
+            'kickstarter' => '0.3.8-',
 		),
 		'conflicts' => array(
 		),
