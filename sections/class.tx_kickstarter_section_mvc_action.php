@@ -69,6 +69,9 @@ class tx_kickstarter_section_mvc_action extends tx_kickstarter_section_mvc_base 
             $lines[] = '<tr><td><strong>Make this a non-cached Action.</strong></td></tr>';
 			$lines[] = '<tr><td>'.$this->renderCheckBox($ffPrefix.'[plus_user_obj]', $piConf[plus_user_obj]).'</td></tr>';
 
+            $lines[] = '<tr><td><strong>Make this action callable through AJAX.</strong></td></tr>';
+			$lines[] = '<tr><td>'.$this->renderCheckBox($ffPrefix.'[plus_ajax]', $piConf[plus_ajax]).'</td></tr>';
+
             $lines[] = '<tr><td><strong>Model for this action to operate on</strong></td></tr>';
 			$lines[] = '<tr><td>'.$this->renderSelectBox($ffPrefix.'[model]',$piConf[model],$modelValues).'</td></tr>';
 

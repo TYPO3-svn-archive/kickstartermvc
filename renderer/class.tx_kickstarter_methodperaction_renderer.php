@@ -44,6 +44,8 @@ class tx_kickstarter_methodperaction_renderer extends tx_kickstarter_renderer_ba
 		$cN = $this->pObj->returnName($extKey,'class','');
         $actions = $this->pObj->wizard->wizArray['mvcaction'];
 
+		$ajaxed = $this->checkForAjax();
+
 		$lines[] = '
 includeLibs.tx_div = EXT:div/class.tx_div.php
 includeLibs.'.$cN.'_controller = EXT:'.$extKey.'/controllers/class.'.$cN.'_controller.php
@@ -55,7 +57,12 @@ plugin.'.$cN.'.controller {
   defaultAction = '.$this->generateName($actions[1][title],0,0,$actions[1][freename]).'
   templatePath = EXT:'.$extKey.'/templates/
   entryClassName =
+  ajaxPageType = 110124
 }';
+
+		if(count($ajaxed)) {
+			$lines[] = $this->getXajaxPage('110124', $cN);
+		}
 
 		$lines[] = '
 tt_content.list.20.'.$extKey.' =< plugin.'.$cN.'.controller
@@ -86,16 +93,28 @@ tt_content.list.20.'.$extKey.' =< plugin.'.$cN.'.controller
 
 		$cN = $this->pObj->returnName($extKey,'class','');
 
+		$ajaxed = $this->checkForAjax();
+
 		$indexContent = '
 tx_div::load(\'tx_lib_controller\');
 
 class '.$cN.'_controller extends tx_lib_controller {
+
+	var $targetControllers = array('.implode(',', $ajaxed).');
 
     function '.$cN.'_controller() {
         $this->setDefaultDesignator(\''.$cN.'\');
     }
 
 ';
+
+		if(count($ajaxed)) {
+			$indexContent .= '
+	function doPreActionProcessings() {
+    	$this->_runXajax();
+	};
+';
+		}
 
         $actions = $this->pObj->wizard->wizArray['mvcaction'];
 		foreach($actions as $action) {
@@ -140,6 +159,10 @@ class '.$cN.'_controller extends tx_lib_controller {
 ';
 
 		}
+		if(count($ajaxed)) {
+			$indexContent .= $this->getXajaxCode();
+		}
+
 		$indexContent .= '}'."\n";
 
 		$this->pObj->addFileToFileArray('controllers/class.'.$cN.'_controller.php', 

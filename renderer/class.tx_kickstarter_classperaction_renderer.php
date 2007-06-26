@@ -81,6 +81,11 @@ plugin.'.$cN.'.controllerSwitch {
 tt_content.list.20.'.$extKey.' =< plugin.'.$cN.'.controllerSwitch
 ';
 
+		$ajaxed = $this->checkForAjax();
+		if(count( $ajaxed )) {
+			$lines[] = $this->getXajaxPageSwitch('110124', $ajaxed);
+		}
+
 		if(!$static)
 			$this->pObj->addFileToFileArray('configurations/setup.txt', implode("\n", $lines));
 		else

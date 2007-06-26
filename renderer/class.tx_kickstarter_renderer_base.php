@@ -35,15 +35,96 @@ class tx_kickstarter_renderer_base {
 		$this->pObj = $pObj;
 	}
 
-   function setParent($pObj) {
-        $this->pObj = $pObj;
-    }
+	function setParent($pObj) {
+		$this->pObj = $pObj;
+	}
 
-   function generateName($name, $alternative, $prefix, $override) {
-        if(!empty($override))
-            return $override;
-        return ($prefix?$prefix:'').($name?$name:$alternative);
-    }
+	function generateName($name, $alternative, $prefix, $override) {
+		if(!empty($override))
+			return $override;
+		return ($prefix?$prefix:'').($name?$name:$alternative);
+	}
+
+	function checkForAjax() {
+		$ajaxed = array();
+
+        $actions = $this->pObj->wizard->wizArray['mvcaction'];
+		foreach($actions as $action) {
+            $action_title = $this->generateName($action[title],0,0,$action[freename]);
+			if(!trim($action_title)) continue;
+
+			if($action['plus_ajax'])	$ajaxed[] = '\''.$action_title.'Action\'';
+		}
+		return $ajaxed;
+	}
+
+	function getXajaxCode() {
+		return '
+	function _runXajax() {
+		// We need the xajax extension
+		if(!t3lib_extMgm::isLoaded(\'xajax\')) {
+			die(\'The extension xaJax (xajax) is required!\');
+		}
+		tx_div::load(\'tx_xajax\');
+	
+		// prepare the action uri
+		$link = tx_div::makeInstance(\'tx_lib_link\');
+		$link->noHash();
+		$destination = $GLOBALS[\'TSFE\']->id,$this->configurations->get(\'ajaxPageType\');
+		$link->destination($destination);
+		$link->designator($this->getDesignator());
+		$url = $link->makeUrl();
+	
+		// build xajax
+		$xajax = tx_div::makeInstance(\'tx_xajax\');
+		$xajax->setRequestURI($url);
+		$xajax->setWrapperPrefix($this->getDesignator());
+		$xajax->statusMessagesOn();
+		$xajax->debugOff();
+		$xajax->waitCursorOff();
+		foreach($this->targetControllers as $target) {
+			$xajax->registerFunction( array($target, &$this, $target));
+		}
+		$xajax->processRequests();
+		$GLOBALS[\'TSFE\']->additionalHeaderData[$this->getClassName()]
+			= $xajax->getJavascript(t3lib_extMgm::siteRelPath(\'xajax\'));
+	}
+';
+	}
+
+	function getXajaxPage($type, $classname) {
+		return '
+		# The ajax response
+ajaxResponse = PAGE
+ajaxResponse.typeNum = '.$type.'
+ajaxResponse.config.disableAllHeaderCode = true
+ajaxResponse.50 = USER_INT
+ajaxResponse.50 {
+	userFunc = '.$classname.'_controller->main
+	setupPath = plugin.'.$classname.'.configurations.
+}
+';
+	}
+
+	function getXajaxPageSwitch($type, $actions) {
+		$i = 10;
+		$lines = '
+		# The ajax response
+ajaxResponse = PAGE
+ajaxResponse.typeNum = '.$type.'
+ajaxResponse.config.disableAllHeaderCode = true
+';
+		foreach($actions as $a) {
+			$lines .= 'ajaxResponse.'.$i.' = USER_INT
+ajaxResponse.'.$i.' {
+	userFunc = '.$classname.'_controller->main
+	setupPath = plugin.'.$classname.'.configurations.
+}
+';
+			$i += 10;
+		}
+		return $lines;
+	}
 
 }
 
