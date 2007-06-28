@@ -165,7 +165,7 @@ class '.$cN.'_controller_'.$action_title.' extends tx_lib_controller {
     function main() {
         $modelClassName = tx_div::makeInstanceClassName(\''.$model.'\');
         $viewClassName = tx_div::makeInstanceClassName(\''.$view.'\');
-        $entryClassName = tx_div::makeInstanceClassName($this->getConfiguration(\'entryClassName\'));
+        $entryClassName = tx_div::makeInstanceClassName($this->configurations->get(\'entryClassName\'));
         $view = tx_div::makeInstance($viewClassName);
         $model = tx_div::makeInstance($modelClassName);
         $model->setConfigurations($this->configurations);

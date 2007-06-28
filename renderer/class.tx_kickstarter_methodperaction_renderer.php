@@ -144,7 +144,7 @@ class '.$cN.'_controller extends tx_lib_controller {
     function '.$action_title.'Action() {
         $modelClassName = tx_div::makeInstanceClassName(\''.$model.'\');
         $viewClassName = tx_div::makeInstanceClassName(\''.$view.'\');
-        $entryClassName = tx_div::makeInstanceClassName($this->getConfiguration(\'entryClassName\'));
+        $entryClassName = tx_div::makeInstanceClassName($this->configurations->get(\'entryClassName\'));
         $view = tx_div::makeInstance($viewClassName);
         $model = tx_div::makeInstance($modelClassName);
 		$model->load();
@@ -153,8 +153,8 @@ class '.$cN.'_controller extends tx_lib_controller {
             $view->append($entry);
         }
         $view->setController($this);
-        $view->setTemplatePath($this->getConfiguration(\'templatePath\'));
-        return $view->render($this->getConfiguration(\''.$template.'\'));
+        $view->setTemplatePath($this->configurations->get(\'templatePath\'));
+        return $view->render($this->configurations->get(\''.$template.'\'));
     }
 ';
 
