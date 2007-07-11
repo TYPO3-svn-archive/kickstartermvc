@@ -117,6 +117,7 @@ class '.$cN.'_controller extends tx_lib_controller {
 		}
 
         $actions = $this->pObj->wizard->wizArray['mvcaction'];
+        if(!is_array($actions)) $actions = array();
 		foreach($actions as $action) {
             $action_title = $this->generateName($action[title],0,0,$action[freename]);
 			if(!trim($action_title)) continue;
@@ -176,73 +177,6 @@ class '.$cN.'_controller extends tx_lib_controller {
 	}
 
     /**
-     * Generates the class.tx_*_model_*.php
-     *
-     * @param       string           $extKey: current extension key
-     * @param       integer          $k: current number of plugin 
-     */
-	function generateModels($extKey, $k) {
-
-		$cN = $this->pObj->returnName($extKey,'class','');
-
-        $models = $this->pObj->wizard->wizArray['mvcmodel'];
-		if(!is_array($models)) return;
-
-		foreach($models as $model) {
-            $tablename = $this->generateName(
-                $this->pObj->wizard->wizArray['tables'][$model['title']]['tablename'],
-                $model['title'],
-                0,
-                $model[freename]
-            );
-			if(!trim($tablename)) continue;
-			$real_tableName = $this->pObj->returnName($extKey,'tables',$tablename);
-
-			$indexContent = '
-class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
-
-        function '.$cN.'_model_'.$tablename.'($parameters = null) {
-                parent::tx_lib_object();
-        }
-
-        function load($parameters = null) {
-
-                // fix settings
-                $fields = \'*\';
-                $tables = \''.$real_tableName.'\';
-                $groupBy = null;
-                $orderBy = \'sorting\';
-                $where = \'hidden = 0 AND deleted = 0 \';
-
-                // variable settings
-                if($parameters) {
-					// do query modifications according to incoming parameters here.
-                }
-
-                // query
-                $query = $GLOBALS[\'TYPO3_DB\']->SELECTquery($fields, $tables, $where, $groupBy, $orderBy);
-                $result = $GLOBALS[\'TYPO3_DB\']->sql_query($query);
-                if($result) {
-                        while($row = $GLOBALS[\'TYPO3_DB\']->sql_fetch_assoc($result)) {
-                                $entry = new tx_lib_object($row);
-                                $this->append($entry);
-                        }
-                }
-        }
-}
-';
-			$this->pObj->addFileToFileArray('models/class.'.$cN.'_model_'.$tablename.'.php', 
-				$this->pObj->PHPclassFile(
-					$extKey,
-					'models/class.'.$cN.'_model_'.$tablename.'.php',
-					$indexContent,
-					'Class that implements the model for table '.$real_tableName.'.'
-				)
-			);
-		}
-	}
-
-    /**
      * Generates the class.tx_*_view_*.php
      *
      * @param       string           $extKey: current extension key
@@ -253,6 +187,7 @@ class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
 		$cN = $this->pObj->returnName($extKey,'class','');
 
         $views = $this->pObj->wizard->wizArray['mvcview'];
+        if(!is_array($views)) $views = array();
 		foreach($views as $view) {
             $view_title = $this->generateName($view[title],0,0,$view[freename]);
 			if(!trim($view_title)) continue;
@@ -285,6 +220,7 @@ class '.$cN.'_view_'.$view_title.' extends tx_lib_'.$this->pObj->viewEngines[$vi
 		$cN = $this->pObj->returnName($extKey,'class','');
 
         $templates = $this->pObj->wizard->wizArray['mvctemplate'];
+        if(!is_array($templates)) $templates = array();
 		foreach($templates as $template) {
             $template_title = $this->generateName($template[title],0,0,$template[freename]);
 			if(!trim($template_title)) continue;

@@ -57,20 +57,37 @@ class tx_kickstarter_section_mvc_model extends tx_kickstarter_section_mvc_base {
 			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
 
 			$lines[] = '<tr><td><strong>Generate model for table:</strong></td></tr>';
-			$lines[] = '<tr><td>There are no tables defined for this extension.</td></tr>';
-			if (is_array($this->wizard->wizArray['tables']))	{
-				array_pop($lines);
-				$optValues = array(
-					'' => '',
-				);
-#				$this->pluginnr = $action[1];
-				$tables = /*array_filter(*/$this->wizard->wizArray['tables']/*, array($this, 'filter_callback'))*/;
+
+            $optValues = array(
+                'tt_content' => 'tt_content (Content)',
+                'fe_users' => 'fe_users (Frontend Users)',
+                'fe_groups' => 'fe_groups (Frontend Groups)',
+                'be_users' => 'be_users (Backend Users)',
+                'be_groups' => 'be_groups (Backend Groups)',
+                'pages' => 'pages (Pages)',
+            );
+			if(is_array($this->wizard->wizArray['tables'])) {
+				$tables = $this->wizard->wizArray['tables'];
 				foreach($tables as $kk => $fC)	{
-					$optValues[$kk]=($fC['tablename']||$fC['title']?$fC['title'].' ('.$this->returnName($this->wizard->extKey,'tables').($fC['tablename']?'_'.$fC['tablename']:'').')':'Item '.$kk).' ('.count($fC['fields']).' fields)';
+					$optValues[$kk] = (
+						$fC['tablename'] || 
+						$fC['title'] ? 
+							$fC['title'].' ('.$this->returnName($this->wizard->extKey,'tables').
+							($fC['tablename'] ? '_'.$fC['tablename'] : '' )
+							.')' :
+							'Item '.$kk).' ('.count($fC['fields']).' fields)';
 				}
-				$subContent=$this->renderSelectBox($ffPrefix.'[table]',$piConf[table],$optValues);
-                $lines[] = '<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
 			}
+            foreach($GLOBALS['TCA'] as $tablename => $tableTCA) {
+                if(!$optValues[$tablename]) {
+                    $optValues[$tablename] = $tablename.' ('.$GLOBALS['LANG']->sL($tableTCA['ctrl']['title']).')';
+                }
+            }
+            asort($optValues);
+
+			$subContent=$this->renderSelectBox($ffPrefix.'[table]',$piConf[table],$optValues);
+            $lines[] = '<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
+
             $lines[] = '<tr><td><strong>Free name for model class</strong></td></tr>';
             $lines[] = '<tr><td>'.$this->renderStringBox($ffPrefix.'[freename]',$piConf[freename]).'</td></tr>';
 		}
