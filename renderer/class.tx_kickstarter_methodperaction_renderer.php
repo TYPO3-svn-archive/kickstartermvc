@@ -290,7 +290,7 @@ class '.$cN.'_view_'.$view_title.' extends tx_lib_'.$this->pObj->viewEngines[$vi
 			if(!trim($template_title)) continue;
 
 			$indexContent = '
-<?php if($this->isNotEmpty() { ?>
+<?php if($this->isNotEmpty()) { ?>
         <ol>
 <?php } ?>
 <?php for($this->rewind(); $this->valid(); $this->next()) {
