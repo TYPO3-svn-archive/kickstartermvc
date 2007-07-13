@@ -165,6 +165,7 @@ class '.$cN.'_controller_'.$action_title.' extends tx_lib_controller {
     }
 
     function main() {
+		'.($action[plus_ajax]?'$response = tx_div::makeInstance(\'tx_xajax_response\');':'').'
         $modelClassName = tx_div::makeInstanceClassName(\''.$model.'\');
         $viewClassName = tx_div::makeInstanceClassName(\''.$view.'\');
         $entryClassName = tx_div::makeInstanceClassName($this->configurations->get(\'entryClassName\'));
@@ -177,7 +178,17 @@ class '.$cN.'_controller_'.$action_title.' extends tx_lib_controller {
         }
         $view->setController($this);
         $view->setTemplatePath($this->configurations->get(\'templatePath\'));
-        return $view->render($this->configurations->get(\''.$template.'\'));
+        $out = $view->render($this->configurations->get(\''.$template.'\'));';
+        	if($action[plus_ajax]) {
+				$indexContent .= '
+        $response->addAssign(\'###EDIT: choose container to update here!###\', \'innerHTML\', $out);
+        return $response;';
+			}
+			else {
+				$indexContent .= '
+        return $out';
+			}
+			$indexContent .= '
     }
 }';
 
@@ -190,75 +201,6 @@ class '.$cN.'_controller_'.$action_title.' extends tx_lib_controller {
                     $action[description]
 				)
 			);
-		}
-	}
-
-    /**
-     * Generates the class.tx_*_view_*.php
-     *
-     * @param       string           $extKey: current extension key
-     * @param       integer          $k: current number of plugin 
-     */
-	function generateViews($extKey, $k) {
-
-		$cN = $this->pObj->returnName($extKey,'class','');
-
-        $views = $this->pObj->wizard->wizArray['mvcview'];
-        if(!is_array($views)) $views = array();
-		foreach($views as $view) {
-            $view_title = $this->generateName($view[title],0,0,$view[freename]);
-			if(!trim($view_title)) continue;
-
-			$indexContent = '
-tx_div::load(\'tx_lib_'.$this->pObj->viewEngines[$view['inherit']].'\');
-
-class '.$cN.'_view_'.$view_title.' extends tx_lib_'.$this->pObj->viewEngines[$view['inherit']].' {
-}';
-
-			$this->pObj->addFileToFileArray('views/class.'.$cN.'_view_'.$view_title.'.php', 
-				$this->pObj->PHPclassFile(
-					$extKey,
-					'views/class.'.$cN.'_view_'.$view_title.'.php',
-					$indexContent,
-					'Class that implements the view for '.$view_title.'.'
-				)
-			);
-		}
-	}
-
-    /**
-     * Generates the class.tx_*_template_*.php
-     *
-     * @param       string           $extKey: current extension key
-     * @param       integer          $k: current number of plugin 
-     */
-	function generateTemplates($extKey, $k) {
-
-		$cN = $this->pObj->returnName($extKey,'class','');
-
-        $templates = $this->pObj->wizard->wizArray['mvctemplate'];
-        if(!is_array($templates)) $templates = array();
-		foreach($templates as $template) {
-            $template_title = $this->generateName($template[title], 0, 0, $template[freename]);
-			if(!trim($template_title)) continue;
-
-			$indexContent = '
-<?php if($this->isNotEmpty()) { ?>
-        <ol>
-<?php } ?>
-<?php for($this->rewind(); $this->valid(); $this->next()) { 
-    $entry = $this->current();
-?>
-        <li>
-			<h3>Insert HTML/Code to display elements here</h3>
-        </li>
-<?php } ?>
-<?php if($this->isNotEmpty()) { ?>
-        </ol>
-<?php } ?>
-';
-
-			$this->pObj->addFileToFileArray('templates/'.$template_title.'.php', $indexContent);
 		}
 	}
 

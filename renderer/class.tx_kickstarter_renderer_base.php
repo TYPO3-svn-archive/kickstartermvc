@@ -118,6 +118,75 @@ class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
 		}
 	}
 
+    /**
+     * Generates the class.tx_*_template_*.php
+     *
+     * @param       string           $extKey: current extension key
+     * @param       integer          $k: current number of plugin 
+     */
+	function generateTemplates($extKey, $k) {
+
+		$cN = $this->pObj->returnName($extKey,'class','');
+
+        $templates = $this->pObj->wizard->wizArray['mvctemplate'];
+        if(!is_array($templates)) $templates = array();
+		foreach($templates as $template) {
+            $template_title = $this->generateName($template[title], 0, 0, $template[freename]);
+			if(!trim($template_title)) continue;
+
+			$indexContent = '
+<?php if($this->isNotEmpty()) { ?>
+        <ol>
+<?php } ?>
+<?php for($this->rewind(); $this->valid(); $this->next()) {
+     $entry = $this->current();
+?>
+        <li>
+			<h3>Insert HTML/Code to display elements here</h3>
+        </li>
+<?php } ?>
+<?php if($this->isNotEmpty()) { ?>
+        </ol>
+<?php } ?>
+';
+
+			$this->pObj->addFileToFileArray('templates/'.$template_title.'.php', $indexContent);
+		}
+	}
+
+    /**
+     * Generates the class.tx_*_view_*.php
+     *
+     * @param       string           $extKey: current extension key
+     * @param       integer          $k: current number of plugin 
+     */
+	function generateViews($extKey, $k) {
+
+		$cN = $this->pObj->returnName($extKey,'class','');
+
+        $views = $this->pObj->wizard->wizArray['mvcview'];
+        if(!is_array($views)) $views = array();
+		foreach($views as $view) {
+            $view_title = $this->generateName($view[title],0,0,$view[freename]);
+			if(!trim($view_title)) continue;
+
+			$indexContent = '
+tx_div::load(\'tx_lib_'.$this->pObj->viewEngines[$view['inherit']].'\');
+
+class '.$cN.'_view_'.$view_title.' extends tx_lib_'.$this->pObj->viewEngines[$view['inherit']].' {
+}';
+
+			$this->pObj->addFileToFileArray('views/class.'.$cN.'_view_'.$view_title.'.php', 
+				$this->pObj->PHPclassFile(
+					$extKey,
+					'views/class.'.$cN.'_view_'.$view_title.'.php',
+					$indexContent,
+					'Class that implements the view for '.$view_title.'.'
+				)
+			);
+		}
+	}
+
 	function checkForAjax() {
 		$ajaxed = array();
 
@@ -177,7 +246,6 @@ ajaxResponse.config.disableAllHeaderCode = true
 ajaxResponse.50 = USER_INT
 ajaxResponse.50 {
 	userFunc = '.$classname.'_controller->main
-	setupPath = plugin.'.$classname.'.configurations.
 }
 ';
 	}
@@ -189,16 +257,21 @@ ajaxResponse.50 {
 ajaxResponse = PAGE
 ajaxResponse.typeNum = '.$type.'
 ajaxResponse.config.disableAllHeaderCode = true
+ajaxResponse.50 = CASE
+ajaxResponse.50 {
+  key.data = GPvar:action
 ';
 		foreach($actions as $a) {
-			$lines .= 'ajaxResponse.'.$i.' = USER_INT
-ajaxResponse.'.$i.' {
+			$lines .= '  '.trim($a,'\'').' = USER_INT
+  '.trim($a,'\'').' {
 	userFunc = '.$classname.'_controller->main
 	setupPath = plugin.'.$classname.'.configurations.
-}
+  }
 ';
 			$i += 10;
 		}
+		$lines .= '}
+';
 		return $lines;
 	}
 
