@@ -164,8 +164,8 @@ class '.$cN.'_controller_'.$action_title.' extends tx_lib_controller {
 	    $this->setDefaultDesignator(\''.$cN.'\');
     }
 
-    function main() {
-		'.($action[plus_ajax]?'$response = tx_div::makeInstance(\'tx_xajax_response\');':'').'
+    function main() {'.
+    	($action[plus_ajax]?'$response = tx_div::makeInstance(\'tx_xajax_response\');':'').'
         $modelClassName = tx_div::makeInstanceClassName(\''.$model.'\');
         $viewClassName = tx_div::makeInstanceClassName(\''.$view.'\');
         $entryClassName = tx_div::makeInstanceClassName($this->configurations->get(\'entryClassName\'));

@@ -142,8 +142,8 @@ class '.$cN.'_controller extends tx_lib_controller {
             );
 
 			$indexContent .= '
-    function '.$action_title.'Action() {
-		'.($action[plus_ajax]?'$response = tx_div::makeInstance(\'tx_xajax_response\');':'').'
+    function '.$action_title.'Action() {'.
+    	($action[plus_ajax]?'$response = tx_div::makeInstance(\'tx_xajax_response\');':'').'
         $modelClassName = tx_div::makeInstanceClassName(\''.$model.'\');
         $viewClassName = tx_div::makeInstanceClassName(\''.$view.'\');
         $entryClassName = tx_div::makeInstanceClassName($this->configurations->get(\'entryClassName\'));

@@ -56,7 +56,6 @@ class tx_kickstarter_section_mvc_view extends tx_kickstarter_section_mvc_base {
                 $this->renderTextareaBox($ffPrefix.'[description]',$piConf['description']);
             $lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
 
-            // New view:
             $lines[] = '<tr'.$this->bgCol(2).'><td>'.$this->fw('<strong>This view is a subclass of:</strong>').'</td></tr>';
 			$subContent = $this->renderSelectBox($ffPrefix.'[inherit]', $piConf[inherit], $this->viewEngines).'<br />';
             $lines[] = '<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';

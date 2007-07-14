@@ -134,21 +134,12 @@ class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
             $template_title = $this->generateName($template[title], 0, 0, $template[freename]);
 			if(!trim($template_title)) continue;
 
-			$indexContent = '
-<?php if($this->isNotEmpty()) { ?>
-        <ol>
-<?php } ?>
-<?php for($this->rewind(); $this->valid(); $this->next()) {
-     $entry = $this->current();
-?>
-        <li>
-			<h3>Insert HTML/Code to display elements here</h3>
-        </li>
-<?php } ?>
-<?php if($this->isNotEmpty()) { ?>
-        </ol>
-<?php } ?>
-';
+			switch($this->pObj->viewEngines[$template[inherit]]) {
+				case 'smartyView': $tempfile = 'smartyViewTemplate.txt'; break;
+				default: $tempfile = 'phpViewTemplate.php'; break;
+			}
+
+			$indexContent = t3lib_div::getUrl(t3lib_extMgm::extPath('kickstarter__mvc').'templates/'.$tempfile);
 
 			$this->pObj->addFileToFileArray('templates/'.$template_title.'.php', $indexContent);
 		}
