@@ -164,7 +164,7 @@ class '.$cN.'_controller extends tx_lib_controller {
 			}
 			else {
 				$indexContent .= '
-        return $out';
+        return $out;';
 			}
 			$indexContent .= '
     }

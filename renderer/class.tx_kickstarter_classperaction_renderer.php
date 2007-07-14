@@ -186,7 +186,7 @@ class '.$cN.'_controller_'.$action_title.' extends tx_lib_controller {
 			}
 			else {
 				$indexContent .= '
-        return $out';
+        return $out;';
 			}
 			$indexContent .= '
     }
