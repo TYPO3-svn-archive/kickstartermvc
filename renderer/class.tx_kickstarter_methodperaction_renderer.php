@@ -148,14 +148,13 @@ class '.$cN.'_controller extends tx_lib_controller {
         $modelClassName = tx_div::makeInstanceClassName(\''.$model.'\');
         $viewClassName = tx_div::makeInstanceClassName(\''.$view.'\');
         $entryClassName = tx_div::makeInstanceClassName($this->configurations->get(\'entryClassName\'));
-        $view = tx_div::makeInstance($viewClassName);
-        $model = tx_div::makeInstance($modelClassName);
+        $view = new $viewClassName($this);
+        $model = new $modelClassName($this);
         $model->load($this->parameters);
         for($model->rewind(); $model->valid(); $model->next()) {
             $entry = new $entryClassName($model->current(), $this);
             $view->append($entry);
         }
-        $view->setController($this);
         $view->setTemplatePath($this->configurations->get(\'templatePath\'));
         $out = $view->render($this->configurations->get(\''.$template.'\'));';
         	if($action[plus_ajax]) {
