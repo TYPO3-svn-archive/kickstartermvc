@@ -42,7 +42,7 @@ class tx_kickstarter_renderer_base {
 	function generateName($name, $alternative, $prefix, $override) {
 		if(!empty($override))
 			return $override;
-		return ($prefix?$prefix:'').(strlen($name)?$name:$alternative);
+		return preg_replace('/[^0-9a-z]*/i', '', ($prefix?$prefix:'').(strlen($name)?$name:$alternative));
 	}
 
     /**
