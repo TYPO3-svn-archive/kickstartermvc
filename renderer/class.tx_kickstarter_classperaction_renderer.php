@@ -197,8 +197,8 @@ class '.$cN.'_controller_'.$action_title.' extends tx_lib_controller {
 					$extKey,
 					'controllers/class.'.$cN.'_controller_'.$action_title.'.php',
 					$indexContent,
-					'Class that implements the controller for action "'.$action_title.'".'."\n".
-                    $action[description]
+					'Class that implements the controller for action "'.$action_title.'".'.
+                    	$this->formatComment($action[description])
 				)
 			);
 		}

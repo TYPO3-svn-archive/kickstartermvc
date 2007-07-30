@@ -42,7 +42,27 @@ class tx_kickstarter_renderer_base {
 	function generateName($name, $alternative, $prefix, $override) {
 		if(!empty($override))
 			return $override;
-		return preg_replace('/[^0-9a-z]*/i', '', ($prefix?$prefix:'').(strlen($name)?$name:$alternative));
+		return preg_replace('/\s+/i', '_', ($prefix?$prefix:'').(strlen($name)?$name:$alternative));
+	}
+
+	/**
+	 * Reformats the given string to fit into the comment block of
+	 * a function. Does stripping and indenting of lines.
+	 * 
+	 * @param	string	the comment to reformat
+	 */
+	function formatComment($comment, $depth = 3) {
+		if(empty($comment)) return '';
+		$tabs = str_repeat("\t", $depth);
+		return
+		"\n$tabs *\n".
+			implode('',
+				array_map(
+					create_function('$a','return "'.$tabs.' * ".$a."\n";'),
+					explode("\n", wordwrap(trim($comment),60))
+				)
+			).
+		"$tabs *";
 	}
 
     /**
@@ -112,7 +132,8 @@ class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
 					$extKey,
 					'models/class.'.$cN.'_model_'.$tablename.'.php',
 					$indexContent,
-					'Class that implements the model for table '.$real_tableName.'.'
+					'Class that implements the model for table '.$real_tableName.'.'.
+						$this->formatComment($model[description])
 				)
 			);
 		}
@@ -172,7 +193,8 @@ class '.$cN.'_view_'.$view_title.' extends tx_lib_'.$this->pObj->viewEngines[$vi
 					$extKey,
 					'views/class.'.$cN.'_view_'.$view_title.'.php',
 					$indexContent,
-					'Class that implements the view for '.$view_title.'.'
+					'Class that implements the view for '.$view_title.'.'.
+						$this->formatComment($view[description])
 				)
 			);
 		}

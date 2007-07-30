@@ -52,10 +52,6 @@ class tx_kickstarter_section_mvc_template extends tx_kickstarter_section_mvc_bas
 				$this->renderStringBox($ffPrefix.'[title]',$piConf[title]);
 			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
 
-            $subContent='<strong>Enter a short description for the template:</strong><br />'.
-                $this->renderTextareaBox($ffPrefix.'[description]',$piConf['description']);
-            $lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
-
             $lines[] = '<tr'.$this->bgCol(2).'><td>'.$this->fw('<strong>This template is for:</strong>').'</td></tr>';
 			$subContent = $this->renderSelectBox($ffPrefix.'[inherit]', $piConf[inherit], $this->viewEngines).'<br />';
             $lines[] = '<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';

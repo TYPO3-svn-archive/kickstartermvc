@@ -143,6 +143,10 @@ class '.$cN.'_controller extends tx_lib_controller {
             );
 
 			$indexContent .= '
+	/**
+	 * Implementation of '.$action_title.'Action()'.
+		$this->formatComment($action[description], 1).'
+	 */
     function '.$action_title.'Action() {'.
     	($action[plus_ajax]?'$response = tx_div::makeInstance(\'tx_xajax_response\');':'').'
         $modelClassName = tx_div::makeInstanceClassName(\''.$model.'\');
