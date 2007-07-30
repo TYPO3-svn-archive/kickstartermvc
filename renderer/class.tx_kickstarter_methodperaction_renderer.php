@@ -103,6 +103,7 @@ class '.$cN.'_controller extends tx_lib_controller {
 	var $targetControllers = array('.implode(',', $ajaxed).');
 
     function '.$cN.'_controller() {
+        parent::tx_lib_controller();
         $this->setDefaultDesignator(\''.$cN.'\');
     }
 

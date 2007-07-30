@@ -78,8 +78,8 @@ class tx_kickstarter_renderer_base {
 			$indexContent = '
 class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
 
-        function '.$cN.'_model_'.$tablename.'($parameters = null) {
-                parent::tx_lib_object();
+        function '.$cN.'_model_'.$tablename.'($controller = null, $parameter = null) {
+                parent::tx_lib_object($controller, $parameter);
         }
 
         function load($parameters = null) {

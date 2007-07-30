@@ -161,6 +161,7 @@ tx_div::load(\'tx_lib_controller\');
 class '.$cN.'_controller_'.$action_title.' extends tx_lib_controller {
 
     function '.$cN.'_controller_'.$action_title.'() {
+        parent::tx_lib_controller();
 	    $this->setDefaultDesignator(\''.$cN.'\');
     }
 
