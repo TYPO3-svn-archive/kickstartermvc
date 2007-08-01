@@ -36,9 +36,8 @@ class tx_kickstarter_classperaction_renderer extends tx_kickstarter_renderer_bas
      *
      * @param       string           $extKey: current extension key
      * @param       integer          $k: current number of plugin 
-	 * @param       bool             $static: include template as static template
      */
-	function generateSetup($extKey, $k, $static) {
+	function generateSetup($extKey, $k) {
 		$lines = array();
 		$incls = array();
 		$acts  = array();
@@ -57,6 +56,7 @@ includeLibs.tx_lib_switch = EXT:lib/class.tx_lib_switch.php';
         $actions = $this->pObj->wizard->wizArray['mvcaction'];
         if(!is_array($actions)) $actions = array();
 		foreach($actions as $action) {
+			if($action[plugin] != $k) continue;
             $action_title = $this->generateName($action['title'],0,0,$action[freename]);
 			if(!trim($action_title)) continue;
 
@@ -79,18 +79,15 @@ plugin.'.$cN.'.controllerSwitch {
 
 		$lines = array_merge($lines, $acts);
 		$lines[] = '}
-tt_content.list.20.'.$extKey.' =< plugin.'.$cN.'.controllerSwitch
+tt_content.list.20.'.$extKey.'_mvc'.$k.' =< plugin.'.$cN.'.controllerSwitch
 ';
 
-		$ajaxed = $this->checkForAjax();
+		$ajaxed = $this->checkForAjax($k);
 		if(count( $ajaxed )) {
 			$lines[] = $this->getXajaxPageSwitch('110124', $ajaxed);
 		}
 
-		if(!$static)
-			$this->pObj->addFileToFileArray('configurations/setup.txt', implode("\n", $lines));
-		else
-			$this->pObj->addFileToFileArray('ext_typoscript_setup.txt', implode("\n", $lines));
+		$this->pObj->addFileToFileArray('configurations/mvc'.$k.'/setup.txt', implode("\n", $lines));
 	}
 
     /**
@@ -133,6 +130,7 @@ class '.$cN.'_configurations extends tx_lib_configurations {
         $actions = $this->pObj->wizard->wizArray['mvcaction'];
         if(!is_array($actions)) $actions = array();
 		foreach($actions as $action) {
+			if($action[plugin] != $k) continue;
             $action_title = $this->generateName($action['title'],0,0,$action[freename]);
 			if(!trim($action_title)) continue;
 

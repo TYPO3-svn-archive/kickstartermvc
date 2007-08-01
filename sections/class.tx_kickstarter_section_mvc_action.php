@@ -56,6 +56,9 @@ class tx_kickstarter_section_mvc_action extends tx_kickstarter_section_mvc_base 
                 $this->renderTextareaBox($ffPrefix.'[description]',$piConf['description']);
             $lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
 
+            $pluginValues = array();
+            if(is_array($this->wizard->wizArray['mvc']))
+                foreach($this->wizard->wizArray['mvc'] as $key => $vv) $pluginValues[$key] = $vv[title];
             $modelValues = array();
             if(is_array($this->wizard->wizArray['mvcmodel']))
                 foreach($this->wizard->wizArray['mvcmodel'] as $key => $vv) $modelValues[$key] = $vv[title];
@@ -65,6 +68,9 @@ class tx_kickstarter_section_mvc_action extends tx_kickstarter_section_mvc_base 
             $templValues = array();
             if(is_array($this->wizard->wizArray['mvctemplate']))
                 foreach($this->wizard->wizArray['mvctemplate'] as $key => $vv) $templValues[$key] = $vv[title];
+
+            $lines[] = '<tr><td><strong>This action belongs to plugin</strong></td></tr>';
+			$lines[] = '<tr><td>'.$this->renderSelectBox($ffPrefix.'[plugin]',$piConf[plugin],$pluginValues).'</td></tr>';
 
             $lines[] = '<tr><td><strong>Make this a non-cached Action.</strong></td></tr>';
 			$lines[] = '<tr><td>'.$this->renderCheckBox($ffPrefix.'[plus_user_obj]', $piConf[plus_user_obj]).'</td></tr>';

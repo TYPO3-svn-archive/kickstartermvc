@@ -36,28 +36,34 @@ class tx_kickstarter_methodperaction_renderer extends tx_kickstarter_renderer_ba
      *
      * @param       string           $extKey: current extension key
      * @param       integer          $k: current number of plugin 
-	 * @param       bool             $static: include template as static template
      */
-	function generateSetup($extKey, $k, $static) {
+	function generateSetup($extKey, $k) {
 		$lines = array();
 
 		$cN = $this->pObj->returnName($extKey,'class','');
         $actions = $this->pObj->wizard->wizArray['mvcaction'];
 
-		$ajaxed = $this->checkForAjax();
-
 		$lines[] = '
 includeLibs.tx_div = EXT:div/class.tx_div.php
-includeLibs.'.$cN.'_controller = EXT:'.$extKey.'/controllers/class.'.$cN.'_controller.php
 
 # Common configuration
-plugin.'.$cN.'.controller = '.($actions[1][plus_user_obj]?'USER_INT':'USER').'
-plugin.'.$cN.'.controller {
-  userFunc = '.$cN.'_controller->main
-  defaultAction = '.$this->generateName($actions[1][title],0,0,$actions[1][freename]).'
+plugin.'.$cN.'.configuration {
   templatePath = EXT:'.$extKey.'/templates/
   entryClassName =
   ajaxPageType = 110124
+}
+';
+
+		$ajaxed = $this->checkForAjax($k);
+	
+		$lines[] = '
+includeLibs.'.$cN.'_controller_mvc'.$k.' = EXT:'.$extKey.'/controllers/class.'.$cN.'_controller_mvc'.$k.'.php
+
+plugin.'.$cN.'.controller_mvc'.$k.' = '.($actions[1][plus_user_obj]?'USER_INT':'USER').'
+plugin.'.$cN.'.controller_mvc'.$k.' < plugin.'.$cN.'.configuration
+plugin.'.$cN.'.controller_mvc'.$k.' {
+  userFunc = '.$cN.'_controller_mvc'.$k.'->main
+  defaultAction = '.$this->generateName($actions[1][title],0,0,$actions[1][freename]).'
 }';
 
 		if(count($ajaxed)) {
@@ -65,22 +71,10 @@ plugin.'.$cN.'.controller {
 		}
 
 		$lines[] = '
-tt_content.list.20.'.$extKey.' =< plugin.'.$cN.'.controller
+tt_content.list.20.'.$extKey.'_mvc'.$k.' =< plugin.'.$cN.'.controller_mvc'.$k.'
 ';
 
-		if(!$static)
-			$this->pObj->addFileToFileArray('configurations/setup.txt', implode("\n", $lines));
-		else
-			$this->pObj->addFileToFileArray('ext_typoscript_setup.txt', implode("\n", $lines));
-	}
-
-    /**
-     * Generates the class.tx_*_configuration.php
-     *
-     * @param       string           $extKey: current extension key
-     * @param       integer          $k: current number of plugin 
-     */
-	function generateConfigClass($extKey, $k) {
+		$this->pObj->addFileToFileArray('configurations/mvc'.$k.'/setup.txt', implode("\n", $lines));
 	}
 
     /**
@@ -93,16 +87,16 @@ tt_content.list.20.'.$extKey.' =< plugin.'.$cN.'.controller
 
 		$cN = $this->pObj->returnName($extKey,'class','');
 
-		$ajaxed = $this->checkForAjax();
+		$ajaxed = $this->checkForAjax($k);
 
 		$indexContent = '
 tx_div::load(\'tx_lib_controller\');
 
-class '.$cN.'_controller extends tx_lib_controller {
+class '.$cN.'_controller_mvc'.$k.' extends tx_lib_controller {
 
 	var $targetControllers = array('.implode(',', $ajaxed).');
 
-    function '.$cN.'_controller() {
+    function '.$cN.'_controller_mvc'.$k.'() {
         parent::tx_lib_controller();
         $this->setDefaultDesignator(\''.$cN.'\');
     }
@@ -120,6 +114,7 @@ class '.$cN.'_controller extends tx_lib_controller {
         $actions = $this->pObj->wizard->wizArray['mvcaction'];
         if(!is_array($actions)) $actions = array();
 		foreach($actions as $action) {
+			if($action[plugin] != $k) continue;
             $action_title = $this->generateName($action[title],0,0,$action[freename]);
 			if(!trim($action_title)) continue;
 
@@ -181,10 +176,10 @@ class '.$cN.'_controller extends tx_lib_controller {
 
 		$indexContent .= '}'."\n";
 
-		$this->pObj->addFileToFileArray('controllers/class.'.$cN.'_controller.php', 
+		$this->pObj->addFileToFileArray('controllers/class.'.$cN.'_controller_mvc'.$k.'.php', 
 			$this->pObj->PHPclassFile(
 				$extKey,
-				'controllers/class.'.$cN.'_controller.php',
+				'controllers/class.'.$cN.'_controller_mvc'.$k.'.php',
 				$indexContent,
 				'Class that implements the controller for '.$cN.'.'
 			)

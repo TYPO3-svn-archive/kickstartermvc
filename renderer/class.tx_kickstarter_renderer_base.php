@@ -172,7 +172,7 @@ class '.$cN.'_model_'.$tablename.' extends tx_lib_object {
      * @param       string           $extKey: current extension key
      * @param       integer          $k: current number of plugin 
      */
-	function generateViews($extKey, $k) {
+    function generateViews($extKey, $k) {
 
 		$cN = $this->pObj->returnName($extKey,'class','');
 
@@ -200,13 +200,24 @@ class '.$cN.'_view_'.$view_title.' extends tx_lib_'.$this->pObj->viewEngines[$vi
 		}
 	}
 
-	function checkForAjax() {
+	/**
+     * Generates the class.tx_*_configuration.php
+     *
+     * @param       string           $extKey: current extension key
+     * @param       integer          $k: current number of plugin 
+     */
+	function generateConfigClass($extKey, $k) {
+	}
+	
+	function checkForAjax($k) {
 		$ajaxed = array();
 
         $actions = $this->pObj->wizard->wizArray['mvcaction'];
         if(!is_array($actions)) return array();
 		foreach($actions as $action) {
-            $action_title = $this->generateName($action[title],0,0,$action[freename]);
+			if($action[plugin] != $k) continue;
+
+			$action_title = $this->generateName($action[title],0,0,$action[freename]);
 			if(!trim($action_title)) continue;
 
 			if($action['plus_ajax'])	$ajaxed[] = '\''.$action_title.'Action\'';

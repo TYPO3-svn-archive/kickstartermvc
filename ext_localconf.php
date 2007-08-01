@@ -5,7 +5,7 @@ $TYPO3_CONF_VARS['EXTCONF']['kickstarter']['sections']['mvc'] = array(
 	'filepath'    => 'EXT:kickstarter__mvc/sections/class.tx_kickstarter_section_mvc.php',
 	'title'       => 'MVC: Frontend Plugin',
 	'description' => 'Create frontend plugins. Plugins are web applications running on the website itself (not in the backend of TYPO3). eFaq, bananas, cherries, apples are examples of mvc plugins.',
-	'singleItem'  => 'mvc',
+	'singleItem'  => '',
 );
 
 $TYPO3_CONF_VARS['EXTCONF']['kickstarter']['sections']['mvcmodel'] = array(

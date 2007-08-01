@@ -55,9 +55,6 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_section_mvc_base {
 				$this->renderStringBox_lang('title',$ffPrefix,$piConf);
 			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
 
-			$subContent = $this->renderCheckBox($ffPrefix.'[plus_not_staticTemplate]',$piConf['plus_not_staticTemplate']).'Enable this option if you want the TypoScript code to be set by default. Otherwise the code will go into a static template file which must be included in the template record (recommended is to <em>not</em> set this option).<br />';
-			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
-
 				// Position
 			if (is_array($this->wizard->wizArray['fields']))	{
 				$optValues = array(
@@ -123,37 +120,36 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_section_mvc_base {
 	 */
 	function render_extPart($k,$config,$extKey) {
 		$WOP='[mvc]['.$k.']';
-		$cN = $this->returnName($extKey,'class','');
+		$cN = $this->returnName($extKey,'class','mvc'.$k);
 
 		$this->wizard->ext_tables[]=$this->sPS('
 			'.$this->WOPcomment('WOP:'.$WOP.'[addType]')."
 			t3lib_div::loadTCA('tt_content');
-			\$TCA['tt_content']['types']['list']['subtypes_excludelist'][\$_EXTKEY]='layout,select_key,pages,recursive';
-			\$TCA['tt_content']['types']['list']['subtypes_addlist'][\$_EXTKEY]='pi_flexform".($config['apply_extended']?$this->wizard->_apply_extended_types[$config['apply_extended']]:"")."';
+			\$TCA['tt_content']['types']['list']['subtypes_excludelist'][\$_EXTKEY.'_mvc".$k."']='layout,select_key,pages,recursive';
+			\$TCA['tt_content']['types']['list']['subtypes_addlist'][\$_EXTKEY.'_mvc".$k."']='pi_flexform".($config['apply_extended']?$this->wizard->_apply_extended_types[$config['apply_extended']]:"")."';
 		");
 
-		if(!$config[plus_not_staticTemplate])
-			$this->wizard->ext_tables[] = $this->sPS('t3lib_extMgm::addStaticFile(\''.$extKey.'\', \'./configurations\', \''.$config[title].'\');');
+		$this->wizard->ext_tables[] = $this->sPS('t3lib_extMgm::addStaticFile(\''.$extKey.'\', \'./configurations/mvc'.$k.'\', \''.$config[title].'\');');
 
-		$this->wizard->ext_tables[]=$this->sPS("t3lib_extMgm::addPiFlexFormValue(\$_EXTKEY, 'FILE:EXT:".$extKey."/configurations/flexform.xml');");
+		$this->wizard->ext_tables[]=$this->sPS("t3lib_extMgm::addPiFlexFormValue(\$_EXTKEY.'_mvc".$k."', 'FILE:EXT:".$extKey."/configurations/mvc".$k."/flexform.xml');");
 
 		$this->wizard->ext_tables[]=$this->sPS('
 			'.$this->WOPcomment('WOP:'.$WOP.'[addType]')."
-			t3lib_extMgm::addPlugin(array('".addslashes($this->getSplitLabels_reference($config,'title','tt_content.'.'list_type_pi'.$k))."', \$_EXTKEY),'list_type');
+			t3lib_extMgm::addPlugin(array('".addslashes($this->getSplitLabels_reference($config,'title','tt_content.'.'list_type_pi'.$k))."', \$_EXTKEY.'_mvc".$k."'),'list_type');
 		");
 
 		$renderer = t3lib_div::makeInstance('tx_kickstarter_'.($this->renderer[$config[code_sel]]).'_renderer');
 		$renderer->setParent($this);
 
-		$renderer->generateSetup($extKey, $k, $config[plus_not_staticTemplate]);
-		$renderer->generateConfigClass($extKey, $k);
+		$renderer->generateSetup($extKey, $k);
 		$renderer->generateActions($extKey, $k);
+		$renderer->generateConfigClass($extKey, $k);
 		$renderer->generateModels($extKey, $k);
 		$renderer->generateViews($extKey, $k);
 		$renderer->generateTemplates($extKey, $k);
 
 		$this->addFileToFileArray(
-			'configurations/flexform.xml',t3lib_div::getUrl(t3lib_extMgm::extPath('kickstarter__mvc').'templates/template_flexform.xml')
+			'configurations/mvc'.$k.'/flexform.xml',t3lib_div::getUrl(t3lib_extMgm::extPath('kickstarter__mvc').'templates/template_flexform.xml')
 		);
 
 			// Add wizard?
@@ -180,7 +176,7 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_section_mvc_base {
 							\'icon\'=>t3lib_extMgm::extRelPath(\''.$extKey.'\').\'ce_wiz.gif\',
 							\'title\'=>$LANG->getLLL(\'mvc'.$k.'_title\',$LL),
 							\'description\'=>$LANG->getLLL(\'mvc'.$k.'_plus_wiz_description\',$LL),
-							\'params\'=>\'&defVals[tt_content][CType]=list&defVals[tt_content][list_type]='.$extKey.'\'
+							\'params\'=>\'&defVals[tt_content][CType]=list&defVals[tt_content][list_type]='.$extKey.'_mvc'.$k.'\'
 						);
 
 						return $wizardItems;
@@ -202,10 +198,10 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_section_mvc_base {
 			0);
 			
 			$this->addFileToFileArray(
-				'configurations/class.'.$cN.'_wizicon.php',
+				'configurations/mvc'.$k.'/class.'.$cN.'_wizicon.php',
 				$this->PHPclassFile(
 					$extKey,
-					'configurations/class.'.$cN.'_wizicon.php',
+					'configurations/mvc'.$k.'/class.'.$cN.'_wizicon.php',
 					$indexContent,
 					'Class that adds the wizard icon.'
 				)
@@ -216,7 +212,7 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_section_mvc_base {
 
 			$this->wizard->ext_tables[]=$this->sPS('
 				'.$this->WOPcomment('WOP:'.$WOP.'[plus_wiz]:').'
-				if (TYPO3_MODE=="BE")	$TBE_MODULES_EXT["xMOD_db_new_content_el"]["addElClasses"]["'.$cN.'_wizicon"] = t3lib_extMgm::extPath($_EXTKEY).\'configurations/class.'.$cN.'_wizicon.php\';
+				if (TYPO3_MODE=="BE")	$TBE_MODULES_EXT["xMOD_db_new_content_el"]["addElClasses"]["'.$cN.'_wizicon"] = t3lib_extMgm::extPath($_EXTKEY).\'configurations/mvc'.$k.'/class.'.$cN.'_wizicon.php\';
 			');
 		}
 	}
