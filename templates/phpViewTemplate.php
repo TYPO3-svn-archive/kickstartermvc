@@ -7,6 +7,8 @@
  */
 ?>
 
+<?php if (!defined ('TYPO3_MODE'))      die ('Access denied.'); ?>
+
 <?php if($this->isNotEmpty()) { ?>
         <ol>
 <?php } ?>
