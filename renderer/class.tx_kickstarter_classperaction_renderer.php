@@ -168,6 +168,7 @@ class '.$cN.'_controller_'.$action_title.' extends tx_lib_controller {
         $modelClassName = tx_div::makeInstanceClassName(\''.$model.'\');
         $viewClassName = tx_div::makeInstanceClassName(\''.$view.'\');
         $entryClassName = tx_div::makeInstanceClassName($this->configurations->get(\'entryClassName\'));
+		$translatorClassName = tx_div::makeInstanceClassName(\'tx_lib_translator\');
         $view = new $viewClassName($this);
         $model = new $modelClassName($this);
         $model->load($this->parameters);
@@ -176,7 +177,9 @@ class '.$cN.'_controller_'.$action_title.' extends tx_lib_controller {
             $view->append($entry);
         }
         $view->setTemplatePath($this->configurations->get(\'templatePath\'));
-        $out = $view->render($this->configurations->get(\''.$template.'\'));';
+        $view->render($this->configurations->get(\''.$template.'\'));
+		$translator = new $translatorClassName($this, $view);
+		$out = $translator->translateContent();';
         	if($action[plus_ajax]) {
 				$indexContent .= '
         $response->addAssign(\'###EDIT: choose container to update here!###\', \'innerHTML\', $out);
