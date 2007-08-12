@@ -156,10 +156,7 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_section_mvc_base {
 		$renderer->generateModels($extKey, $k);
 		$renderer->generateViews($extKey, $k);
 		$renderer->generateTemplates($extKey, $k);
-
-		$this->addFileToFileArray(
-			'configurations/mvc'.$k.'/flexform.xml',t3lib_div::getUrl(t3lib_extMgm::extPath('kickstarter__mvc').'templates/template_flexform.xml')
-		);
+		$renderer->generateFlexform($extKey, $k);
 
 			// Add wizard?
 

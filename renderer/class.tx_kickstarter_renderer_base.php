@@ -342,6 +342,18 @@ class '.$cN.'_controller_'.$contr_name.' extends tx_lib_controller {
 		} // foreach
 	}
 
+    /**
+     * Generates the flexform for this plugin
+     *
+     * @param       string           $extKey: current extension key
+     * @param       integer          $k: current number of plugin 
+     */
+	function generateFlexform($extKey, $k) {
+		$this->pObj->addFileToFileArray(
+			'configurations/mvc'.$k.'/flexform.xml',t3lib_div::getUrl(t3lib_extMgm::extPath('kickstarter__mvc').'templates/template_flexform.xml')
+		);
+	}
+
 	function checkForAjax($k) {
 		$ajaxed = array();
 

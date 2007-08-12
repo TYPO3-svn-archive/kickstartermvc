@@ -118,6 +118,37 @@ class '.$cN.'_configurations extends tx_lib_configurations {
 		);
 	}
 
+    /**
+     * Generates the flexform for this plugin
+     *
+     * @param       string           $extKey: current extension key
+     * @param       integer          $k: current number of plugin 
+     */
+	function generateFlexform($extKey, $k) {
+		$flexform = t3lib_div::getUrl(t3lib_extMgm::extPath('kickstarter__mvc').'templates/template_flexform_switched.xml');
+		$flexform = str_replace('###LABEL###', $this->pObj->getSplitLabels_reference(array('title'=>'Select subcontroller'),'title','flexform.controllerSelection'), $flexform);
+		$tmp = '';
+		$i = 1;
+
+		$controllers = $this->pObj->wizard->wizArray['mvccontroller'];
+        if(!is_array($controllers)) $controllers = array();
+		foreach($controllers as $kk => $contr) {
+			if($contr[plugin] != $k) continue;
+            $contr_title = $this->generateName($contr['title'],0,0,$contr[freename]);
+			if(!trim($contr_title)) continue;
+
+			$label = $this->pObj->getSplitLabels_reference(array('title'=>$contr[title]),'title','flexform.controllerSelection.'.$contr_title);
+			$tmp .= '
+			<numIndex index="'.($i++*10).'" type="array">
+                <numIndex index="0">'.$label.'</numIndex>
+                <numIndex index="1">'.$contr_title.'</numIndex>
+            </numIndex>';
+		}
+		$this->pObj->addFileToFileArray(
+			'configurations/mvc'.$k.'/flexform.xml', str_replace('###ITEMS###',$tmp, $flexform)
+		);
+	}
+	
 }
 
 
