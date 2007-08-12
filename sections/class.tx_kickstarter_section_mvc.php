@@ -29,8 +29,8 @@
 
 require_once(t3lib_extMgm::extPath('kickstarter__mvc').'sections/class.tx_kickstarter_section_mvc_base.php');
 
-require_once(t3lib_extMgm::extPath('kickstarter__mvc').'renderer/class.tx_kickstarter_classperaction_renderer.php');
-require_once(t3lib_extMgm::extPath('kickstarter__mvc').'renderer/class.tx_kickstarter_methodperaction_renderer.php');
+require_once(t3lib_extMgm::extPath('kickstarter__mvc').'renderer/class.tx_kickstarter_switched_renderer.php');
+require_once(t3lib_extMgm::extPath('kickstarter__mvc').'renderer/class.tx_kickstarter_simple_renderer.php');
 
 class tx_kickstarter_section_mvc extends tx_kickstarter_section_mvc_base {
 	var $sectionID = 'mvc';

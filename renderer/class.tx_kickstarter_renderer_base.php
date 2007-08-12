@@ -276,7 +276,72 @@ class '.$cN.'_view_'.$view_title.' extends tx_lib_'.$this->pObj->viewEngines[$vi
      */
 	function generateConfigClass($extKey, $k) {
 	}
-	
+
+    /**
+     * Generates the class.tx_*_controller_*.php
+     *
+     * @param       string           $extKey: current extension key
+     * @param       integer          $k: current number of plugin 
+     */
+	function generateControllers($extKey, $k) {
+
+		$cN = $this->pObj->returnName($extKey,'class','');
+
+		$controllers = $this->pObj->wizard->wizArray['mvccontroller'];
+
+		foreach($controllers as $kk => $contr) {
+			if($contr[plugin] != $k) continue;
+			$contr_name = $this->generateName($contr[title], 0, 0, $contr[freename]);
+
+			$ajaxed = $this->checkForAjax($kk);
+
+			$indexContent = '
+tx_div::load(\'tx_lib_controller\');
+
+class '.$cN.'_controller_'.$contr_name.' extends tx_lib_controller {
+
+	var $targetControllers = array('.implode(',', $ajaxed).');
+
+    function '.$cN.'_controller_'.$contr_name.'($parameter1 = null, $parameter2 = null) {
+        parent::tx_lib_controller($parameter1, $parameter2);
+        $this->setDefaultDesignator(\''.$cN.'\');
+    }
+
+';
+
+			if(count($ajaxed)) {
+				$indexContent .= '
+	function doPreActionProcessings() {
+    	$this->_runXajax();
+	};
+';
+			}
+
+	        $actions = $this->pObj->wizard->wizArray['mvcaction'];
+	        if(!is_array($actions)) $actions = array();
+			foreach($actions as $action) {
+				if($action[controller] != $kk) continue;
+				$indexContent .= $this->generateAction($action, $cN);
+			}
+
+			if(count($ajaxed)) {
+				$indexContent .= $this->getXajaxCode();
+			}
+
+			$indexContent .= '}'."\n";
+
+			$this->pObj->addFileToFileArray('controllers/class.'.$cN.'_controller_'.$contr_name.'.php', 
+				$this->pObj->PHPclassFile(
+					$extKey,
+					'controllers/class.'.$cN.'_controller_'.$contr_name.'.php',
+					$indexContent,
+					'Class that implements the controller "'.$contr_name.'" for '.$cN.'.'.
+						$this->formatComment($contr[description], 3)
+				)
+			);
+		} // foreach
+	}
+
 	function checkForAjax($k) {
 		$ajaxed = array();
 
@@ -376,7 +441,8 @@ ajaxResponse.50 {
 			$action_title = $this->generateName($action[title],0,0,$action[freename]);
 			if(!trim($action_title)) continue;
 
-			return $action_title;
+			if($action[defaction] == 1)
+				return $action_title;
 		}
 		return '';
 	}

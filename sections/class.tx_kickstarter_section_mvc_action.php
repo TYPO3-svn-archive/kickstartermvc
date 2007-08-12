@@ -72,6 +72,9 @@ class tx_kickstarter_section_mvc_action extends tx_kickstarter_section_mvc_base 
             $lines[] = '<tr><td><strong>This action belongs to contoller</strong></td></tr>';
 			$lines[] = '<tr><td>'.$this->renderSelectBox($ffPrefix.'[controller]',$piConf[controller],$controllerValues).'</td></tr>';
 
+			$lines[] = '<tr><td><strong>This is the default action for the above controller on</strong></td></tr>';
+			$lines[] = '<tr><td>'.$this->renderCheckBox($ffPrefix.'[defaction]',$piConf[defaction]).'</td></tr>';
+			
             $lines[] = '<tr><td><strong>Make this action callable through AJAX.</strong></td></tr>';
 			$lines[] = '<tr><td>'.$this->renderCheckBox($ffPrefix.'[plus_ajax]', $piConf[plus_ajax]).'</td></tr>';
 

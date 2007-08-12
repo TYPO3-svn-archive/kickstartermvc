@@ -29,7 +29,7 @@
 
 require_once(t3lib_extMgm::extPath('kickstarter__mvc').'renderer/class.tx_kickstarter_renderer_base.php');
 
-class tx_kickstarter_classperaction_renderer extends tx_kickstarter_renderer_base {
+class tx_kickstarter_switched_renderer extends tx_kickstarter_renderer_base {
 
     /**
      * Generates the setup.txt
@@ -46,27 +46,28 @@ class tx_kickstarter_classperaction_renderer extends tx_kickstarter_renderer_bas
 
 		$lines[] = '
 # Common configuration
-plugin.'.$cN.'.configurations {
+plugin.'.$cN.'_mvc'.$k.'.configurations {
   templatePath = EXT:'.$extKey.'/templates/
 }
 
 includeLibs.tx_div = EXT:div/class.tx_div.php
 includeLibs.tx_lib_switch = EXT:lib/class.tx_lib_switch.php';
 
-        $actions = $this->pObj->wizard->wizArray['mvcaction'];
-        if(!is_array($actions)) $actions = array();
-		foreach($actions as $action) {
-			if($action[plugin] != $k) continue;
-            $action_title = $this->generateName($action['title'],0,0,$action[freename]);
-			if(!trim($action_title)) continue;
+        $controllers = $this->pObj->wizard->wizArray['mvccontroller'];
+        if(!is_array($controllers)) $controllers = array();
+		foreach($controllers as $kk => $contr) {
+			if($contr[plugin] != $k) continue;
+            $contr_title = $this->generateName($contr['title'],0,0,$contr[freename]);
+			if(!trim($contr_title)) continue;
 
-			$acts[] = '    '.$action_title.' = '.($action[plus_user_obj]?'USER_INT':'USER').'
-    '.$action_title.' {
-       userFunc = '.$cN.'_controller_'.$action_title.'->main
-       setupPath = plugin.'.$cN.'.configurations.
+			$c[] = '    '.$contr_title.' = '.($contr[plus_user_obj]?'USER_INT':'USER').'
+    '.$contr_title.' {
+       userFunc = '.$cN.'_controller_'.$contr_title.'->main
+       setupPath = plugin.'.$cN.'_mvc'.$k.'.configurations.
+       defaultAction = '.$this->getDefaultAction($kk).'
     }';
-			$incls[] = 'includeLibs.'.$cN.'_controller_'.$action_title.' = '.
-				'EXT:'.$extKey.'/controllers/class.'.$cN.'_controller_'.$action_title.'.php';
+			$incls[] = 'includeLibs.'.$cN.'_controller_'.$contr_title.' = '.
+				'EXT:'.$extKey.'/controllers/class.'.$cN.'_controller_'.$contr_title.'.php';
 		}
 		$lines = array_merge($lines, $incls);
 
@@ -77,7 +78,7 @@ plugin.'.$cN.'.controllerSwitch {
     userFunc = tx_lib_switch->main
 ';
 
-		$lines = array_merge($lines, $acts);
+		$lines = array_merge($lines, $c);
 		$lines[] = '}
 tt_content.list.20.'.$extKey.'_mvc'.$k.' =< plugin.'.$cN.'.controllerSwitch
 ';
@@ -104,7 +105,7 @@ tt_content.list.20.'.$extKey.'_mvc'.$k.' =< plugin.'.$cN.'.controllerSwitch
 tx_div::load(\'tx_lib_configurations\');
 
 class '.$cN.'_configurations extends tx_lib_configurations {
-        var $setupPath = \'plugin.'.$cN.'.configurations.\';
+        var $setupPath = \'plugin.'.$cN.'_mvc'.$k.'.configurations.\';
 }';
 
 		$this->pObj->addFileToFileArray('configurations/class.'.$cN.'_configuration.php', 
@@ -117,40 +118,12 @@ class '.$cN.'_configurations extends tx_lib_configurations {
 		);
 	}
 
-    /**
-     * Generates the class.tx_*_controller_*.php
-     *
-     * @param       string           $extKey: current extension key
-     * @param       integer          $k: current number of plugin 
-     */
-	function generateControllers($extKey, $k) {
-
-		$cN = $this->pObj->returnName($extKey,'class','');
-
-        $actions = $this->pObj->wizard->wizArray['mvcaction'];
-        if(!is_array($actions)) $actions = array();
-		foreach($actions as $action) {
-			if($action[controller] != $k) continue;
-			$indexContent .= $this->generateAction($extKey, $k);
-
-			$this->pObj->addFileToFileArray('controllers/class.'.$cN.'_controller_'.$action_title.'.php', 
-				$this->pObj->PHPclassFile(
-					$extKey,
-					'controllers/class.'.$cN.'_controller_'.$action_title.'.php',
-					$indexContent,
-					'Class that implements the controller for action "'.$action_title.'".'.
-                    	$this->formatComment($action[description])
-				)
-			);
-		}
-	}
-
 }
 
 
 // Include ux_class extension?
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc/renderer/class.tx_kickstarter_classperaction_renderer.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc/renderer/class.tx_kickstarter_classperaction_renderer.php']);
+if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc/renderer/class.tx_kickstarter_switched_renderer.php']) {
+	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc/renderer/class.tx_kickstarter_switched_renderer.php']);
 }
 
 ?>
