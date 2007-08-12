@@ -8,6 +8,14 @@ $TYPO3_CONF_VARS['EXTCONF']['kickstarter']['sections']['mvc'] = array(
 	'singleItem'  => '',
 );
 
+$TYPO3_CONF_VARS['EXTCONF']['kickstarter']['sections']['mvccontroller'] = array(
+	'classname'   => 'tx_kickstarter_section_mvc_controller',
+	'filepath'    => 'EXT:kickstarter__mvc/sections/class.tx_kickstarter_section_mvc_controller.php',
+	'title'       => 'MVC: Controller',
+	'description' => '',
+	'singleItem'  => '',
+);
+
 $TYPO3_CONF_VARS['EXTCONF']['kickstarter']['sections']['mvcmodel'] = array(
 	'classname'   => 'tx_kickstarter_section_mvc_model',
 	'filepath'    => 'EXT:kickstarter__mvc/sections/class.tx_kickstarter_section_mvc_model.php',

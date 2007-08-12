@@ -123,75 +123,15 @@ class '.$cN.'_configurations extends tx_lib_configurations {
      * @param       string           $extKey: current extension key
      * @param       integer          $k: current number of plugin 
      */
-	function generateActions($extKey, $k) {
+	function generateControllers($extKey, $k) {
 
 		$cN = $this->pObj->returnName($extKey,'class','');
 
         $actions = $this->pObj->wizard->wizArray['mvcaction'];
         if(!is_array($actions)) $actions = array();
 		foreach($actions as $action) {
-			if($action[plugin] != $k) continue;
-            $action_title = $this->generateName($action['title'],0,0,$action[freename]);
-			if(!trim($action_title)) continue;
-
-            $model = $this->generateName(
-                    $this->pObj->wizard->wizArray['tables'][$action['model']][tablename],
-                    $this->pObj->wizard->wizArray['mvcmodel'][$action['model']][title],
-                    $cN.'_model_',
-                    $this->pObj->wizard->wizArray['mvcmodel'][$action['model']][freename]
-            );
-			$view  = $this->generateName(
-                    $this->pObj->wizard->wizArray['mvcview'][$action[view]][title],
-                    0,
-                    $cN.'_view_',
-                    $this->pObj->wizard->wizArray['mvcview'][$action[view]][freename]
-            );
-			$template  = $this->generateName(
-                    $this->pObj->wizard->wizArray['mvctemplate'][$action[template]][title],
-                    0,
-                    0,
-                    $this->pObj->wizard->wizArray['mvctemplate'][$action[template]][freename]
-            );
-
-			$indexContent = '
-tx_div::load(\'tx_lib_controller\');
-
-class '.$cN.'_controller_'.$action_title.' extends tx_lib_controller {
-
-    function '.$cN.'_controller_'.$action_title.'() {
-        parent::tx_lib_controller();
-	    $this->setDefaultDesignator(\''.$cN.'\');
-    }
-
-    function main() {'.
-    	($action[plus_ajax]?'$response = tx_div::makeInstance(\'tx_xajax_response\');':'').'
-        $modelClassName = tx_div::makeInstanceClassName(\''.$model.'\');
-        $viewClassName = tx_div::makeInstanceClassName(\''.$view.'\');
-        $entryClassName = tx_div::makeInstanceClassName($this->configurations->get(\'entryClassName\'));
-		$translatorClassName = tx_div::makeInstanceClassName(\'tx_lib_translator\');
-        $view = new $viewClassName($this);
-        $model = new $modelClassName($this);
-        $model->load($this->parameters);
-        for($model->rewind(); $model->valid(); $model->next()) {
-            $entry = new $entryClassName($model->current(), $this);
-            $view->append($entry);
-        }
-        $view->setTemplatePath($this->configurations->get(\'templatePath\'));
-        $view->render($this->configurations->get(\''.$template.'\'));
-		$translator = new $translatorClassName($this, $view);
-		$out = $translator->translateContent();';
-        	if($action[plus_ajax]) {
-				$indexContent .= '
-        $response->addAssign(\'###EDIT: choose container to update here!###\', \'innerHTML\', $out);
-        return $response;';
-			}
-			else {
-				$indexContent .= '
-        return $out;';
-			}
-			$indexContent .= '
-    }
-}';
+			if($action[controller] != $k) continue;
+			$indexContent .= $this->generateAction($extKey, $k);
 
 			$this->pObj->addFileToFileArray('controllers/class.'.$cN.'_controller_'.$action_title.'.php', 
 				$this->pObj->PHPclassFile(

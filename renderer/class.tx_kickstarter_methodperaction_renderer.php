@@ -41,39 +41,43 @@ class tx_kickstarter_methodperaction_renderer extends tx_kickstarter_renderer_ba
 		$lines = array();
 
 		$cN = $this->pObj->returnName($extKey,'class','');
-        $actions = $this->pObj->wizard->wizArray['mvcaction'];
 
 		$lines[] = '
 includeLibs.tx_div = EXT:div/class.tx_div.php
 
 # Common configuration
-plugin.'.$cN.'.configuration {
+plugin.'.$cN.'_mvc'.$k.'.configuration {
   templatePath = EXT:'.$extKey.'/templates/
   entryClassName =
   ajaxPageType = 110124
 }
 ';
 
-		$ajaxed = $this->checkForAjax($k);
-	
-		$lines[] = '
-includeLibs.'.$cN.'_controller_mvc'.$k.' = EXT:'.$extKey.'/controllers/class.'.$cN.'_controller_mvc'.$k.'.php
+		$controllers = $this->pObj->wizard->wizArray['mvccontroller'];
 
-plugin.'.$cN.'.controller_mvc'.$k.' = '.($actions[1][plus_user_obj]?'USER_INT':'USER').'
-plugin.'.$cN.'.controller_mvc'.$k.' < plugin.'.$cN.'.configuration
-plugin.'.$cN.'.controller_mvc'.$k.' {
-  userFunc = '.$cN.'_controller_mvc'.$k.'->main
-  defaultAction = '.$this->generateName($actions[1][title],0,0,$actions[1][freename]).'
-}';
+		foreach($controllers as $kk => $contr) {
+			if($contr[plugin] != $k) continue;
+			$contr_name = $this->generateName($contr[title], 0, 0, $contr[freename]);
+
+			$ajaxed = $this->checkForAjax($kk);
+
+			$lines[] = '
+includeLibs.'.$cN.'_controller_'.$contr_name.' = EXT:'.$extKey.'/controllers/class.'.$cN.'_controller_'.$contr_name.'.php
+
+plugin.'.$cN.'.controller_'.$contr_name.' = '.($contr[plus_user_obj]?'USER_INT':'USER').'
+plugin.'.$cN.'.controller_'.$contr_name.' < plugin.'.$cN.'_mvc'.$k.'.configuration
+plugin.'.$cN.'.controller_'.$contr_name.' {
+  userFunc = '.$cN.'_controller_'.$contr_name.'->main
+  defaultAction = '.$this->getDefaultAction($kk).'
+}
+
+tt_content.list.20.'.$extKey.'_'.$contr_name.' =< plugin.'.$cN.'.controller_'.$contr_name;
+		}
 
 		if(count($ajaxed)) {
 			$lines[] = $this->getXajaxPage('110124', $cN);
 		}
-
-		$lines[] = '
-tt_content.list.20.'.$extKey.'_mvc'.$k.' =< plugin.'.$cN.'.controller_mvc'.$k.'
-';
-
+			
 		$this->pObj->addFileToFileArray('configurations/mvc'.$k.'/setup.txt', implode("\n", $lines));
 	}
 
@@ -83,110 +87,63 @@ tt_content.list.20.'.$extKey.'_mvc'.$k.' =< plugin.'.$cN.'.controller_mvc'.$k.'
      * @param       string           $extKey: current extension key
      * @param       integer          $k: current number of plugin 
      */
-	function generateActions($extKey, $k) {
+	function generateControllers($extKey, $k) {
 
 		$cN = $this->pObj->returnName($extKey,'class','');
 
-		$ajaxed = $this->checkForAjax($k);
+		$controllers = $this->pObj->wizard->wizArray['mvccontroller'];
 
-		$indexContent = '
+		foreach($controllers as $kk => $contr) {
+			if($contr[plugin] != $k) continue;
+			$contr_name = $this->generateName($contr[title], 0, 0, $contr[freename]);
+
+			$ajaxed = $this->checkForAjax($kk);
+
+			$indexContent = '
 tx_div::load(\'tx_lib_controller\');
 
-class '.$cN.'_controller_mvc'.$k.' extends tx_lib_controller {
+class '.$cN.'_controller_'.$contr_name.' extends tx_lib_controller {
 
 	var $targetControllers = array('.implode(',', $ajaxed).');
 
-    function '.$cN.'_controller_mvc'.$k.'() {
+    function '.$cN.'_controller_'.$contr_name.'() {
         parent::tx_lib_controller();
         $this->setDefaultDesignator(\''.$cN.'\');
     }
 
 ';
 
-		if(count($ajaxed)) {
-			$indexContent .= '
+			if(count($ajaxed)) {
+				$indexContent .= '
 	function doPreActionProcessings() {
     	$this->_runXajax();
 	};
 ';
-		}
-
-        $actions = $this->pObj->wizard->wizArray['mvcaction'];
-        if(!is_array($actions)) $actions = array();
-		foreach($actions as $action) {
-			if($action[plugin] != $k) continue;
-            $action_title = $this->generateName($action[title],0,0,$action[freename]);
-			if(!trim($action_title)) continue;
-
-            $model = $this->generateName(
-                    $this->pObj->wizard->wizArray['tables'][$action['model']][tablename],
-                    $this->pObj->wizard->wizArray['mvcmodel'][$action['model']][title],
-                    $cN.'_model_',
-                    $this->pObj->wizard->wizArray['mvcmodel'][$action['model']][freename]
-            );
-            $view  = $this->generateName(
-                    $this->pObj->wizard->wizArray['mvcview'][$action[view]][title],
-                    0,
-                    $cN.'_view_',
-                    $this->pObj->wizard->wizArray['mvcview'][$action[view]][freename]
-            );
-            $template  = $this->generateName(
-                    $this->pObj->wizard->wizArray['mvctemplate'][$action[template]][title],
-                    0,
-                    0,
-                    $this->pObj->wizard->wizArray['mvctemplate'][$action[template]][freename]
-            );
-
-			$indexContent .= '
-	/**
-	 * Implementation of '.$action_title.'Action()'.
-		$this->formatComment($action[description], 1).'
-	 */
-    function '.$action_title.'Action() {'.
-    	($action[plus_ajax]?'$response = tx_div::makeInstance(\'tx_xajax_response\');':'').'
-        $modelClassName = tx_div::makeInstanceClassName(\''.$model.'\');
-        $viewClassName = tx_div::makeInstanceClassName(\''.$view.'\');
-        $entryClassName = tx_div::makeInstanceClassName($this->configurations->get(\'entryClassName\'));
-		$translatorClassName = tx_div::makeInstanceClassName(\'tx_lib_translator\');
-        $view = new $viewClassName($this);
-        $model = new $modelClassName($this);
-        $model->load($this->parameters);
-        for($model->rewind(); $model->valid(); $model->next()) {
-            $entry = new $entryClassName($model->current(), $this);
-            $view->append($entry);
-        }
-        $view->setTemplatePath($this->configurations->get(\'templatePath\'));
-        $view->render($this->configurations->get(\''.$template.'\'));
-		$translator = new $translatorClassName($this, $view);
-		$out = $translator->translateContent();';
-        	if($action[plus_ajax]) {
-				$indexContent .= '
-        $response->addAssign(\'###EDIT: choose container to update here!###\', \'innerHTML\', $out);
-        return $response;';
 			}
-			else {
-				$indexContent .= '
-        return $out;';
+
+	        $actions = $this->pObj->wizard->wizArray['mvcaction'];
+	        if(!is_array($actions)) $actions = array();
+			foreach($actions as $action) {
+				if($action[controller] != $kk) continue;
+				$indexContent .= $this->generateAction($action, $cN);
 			}
-			$indexContent .= '
-    }
-';
 
-		}
-		if(count($ajaxed)) {
-			$indexContent .= $this->getXajaxCode();
-		}
+			if(count($ajaxed)) {
+				$indexContent .= $this->getXajaxCode();
+			}
 
-		$indexContent .= '}'."\n";
+			$indexContent .= '}'."\n";
 
-		$this->pObj->addFileToFileArray('controllers/class.'.$cN.'_controller_mvc'.$k.'.php', 
-			$this->pObj->PHPclassFile(
-				$extKey,
-				'controllers/class.'.$cN.'_controller_mvc'.$k.'.php',
-				$indexContent,
-				'Class that implements the controller for '.$cN.'.'
-			)
-		);
+			$this->pObj->addFileToFileArray('controllers/class.'.$cN.'_controller_'.$contr_name.'.php', 
+				$this->pObj->PHPclassFile(
+					$extKey,
+					'controllers/class.'.$cN.'_controller_'.$contr_name.'.php',
+					$indexContent,
+					'Class that implements the controller "'.$contr_name.'" for '.$cN.'.'.
+						$this->formatComment($contr[description], 3)
+				)
+			);
+		} // foreach
 	}
 
 }

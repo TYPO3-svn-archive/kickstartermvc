@@ -104,6 +104,15 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_section_mvc_base {
 				$this->renderer_select);
 			$lines[] = '<tr><td><hr /></td></tr>';
 			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
+
+				/* create default controller */
+			if(!isset($piConf[done])) {
+				$ctr_cnt = count($this->wizard->wizArray['mvccontroller'])+1;
+				$this->regNewEntry('mvccontroller', $ctr_cnt);;
+				$this->wizard->wizArray['mvccontroller'][$ctr_cnt] = array('plugin'=>$action[1],'title'=>'default'.$action[1]);
+				$piConf[done] = 1;
+			}
+			$lines[] = '<input type="hidden" name="kickstarter[wizArray_upd]'.$ffPrefix.'[done]" value="'.$piConf[done].'" />';
 		}
 
 		$content = '<table border=0 cellpadding=2 cellspacing=2>'.implode("\n",$lines).'</table>';
@@ -142,7 +151,7 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_section_mvc_base {
 		$renderer->setParent($this);
 
 		$renderer->generateSetup($extKey, $k);
-		$renderer->generateActions($extKey, $k);
+		$renderer->generateControllers($extKey, $k);
 		$renderer->generateConfigClass($extKey, $k);
 		$renderer->generateModels($extKey, $k);
 		$renderer->generateViews($extKey, $k);

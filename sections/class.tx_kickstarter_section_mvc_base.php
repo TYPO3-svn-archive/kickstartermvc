@@ -33,7 +33,7 @@ class tx_kickstarter_section_mvc_base extends tx_kickstarter_sectionbase {
 	var $pluginnr = -1;
 	var $viewEngines = array('phpTemplateEngine','smartyView');
 	var $renderer = array('methodperaction', 'classperaction');
-	var $renderer_select = array('0'=>'Method per Action in Controller', '1'=>'Single class per Action');
+	var $renderer_select = array('0'=>'Simple Controllers', '1'=>'Switched Controllers');
 	var $ajaxActions = array();
 
 }

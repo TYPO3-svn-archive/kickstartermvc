@@ -47,7 +47,7 @@ class tx_kickstarter_section_mvc_action extends tx_kickstarter_section_mvc_base 
 			$piConf   = $this->wizard->wizArray[$this->sectionID][$action[1]];
 			$ffPrefix = '['.$this->sectionID.']['.$action[1].']';
 
-				// Enter title of the plugin
+				// Enter title of the action
 			$subContent='<strong>Enter a title for the action:</strong><br />'.
 				$this->renderStringBox($ffPrefix.'[title]',$piConf['title']);
 			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
@@ -56,9 +56,9 @@ class tx_kickstarter_section_mvc_action extends tx_kickstarter_section_mvc_base 
                 $this->renderTextareaBox($ffPrefix.'[description]',$piConf['description']);
             $lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
 
-            $pluginValues = array();
-            if(is_array($this->wizard->wizArray['mvc']))
-                foreach($this->wizard->wizArray['mvc'] as $key => $vv) $pluginValues[$key] = $vv[title];
+            $controllerValues = array();
+            if(is_array($this->wizard->wizArray['mvccontroller']))
+                foreach($this->wizard->wizArray['mvccontroller'] as $key => $vv) $controllerValues[$key] = $vv[title];
             $modelValues = array();
             if(is_array($this->wizard->wizArray['mvcmodel']))
                 foreach($this->wizard->wizArray['mvcmodel'] as $key => $vv) $modelValues[$key] = $vv[title];
@@ -69,11 +69,8 @@ class tx_kickstarter_section_mvc_action extends tx_kickstarter_section_mvc_base 
             if(is_array($this->wizard->wizArray['mvctemplate']))
                 foreach($this->wizard->wizArray['mvctemplate'] as $key => $vv) $templValues[$key] = $vv[title];
 
-            $lines[] = '<tr><td><strong>This action belongs to plugin</strong></td></tr>';
-			$lines[] = '<tr><td>'.$this->renderSelectBox($ffPrefix.'[plugin]',$piConf[plugin],$pluginValues).'</td></tr>';
-
-            $lines[] = '<tr><td><strong>Make this a non-cached Action.</strong></td></tr>';
-			$lines[] = '<tr><td>'.$this->renderCheckBox($ffPrefix.'[plus_user_obj]', $piConf[plus_user_obj]).'</td></tr>';
+            $lines[] = '<tr><td><strong>This action belongs to contoller</strong></td></tr>';
+			$lines[] = '<tr><td>'.$this->renderSelectBox($ffPrefix.'[controller]',$piConf[controller],$controllerValues).'</td></tr>';
 
             $lines[] = '<tr><td><strong>Make this action callable through AJAX.</strong></td></tr>';
 			$lines[] = '<tr><td>'.$this->renderCheckBox($ffPrefix.'[plus_ajax]', $piConf[plus_ajax]).'</td></tr>';

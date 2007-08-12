@@ -200,6 +200,74 @@ class '.$cN.'_view_'.$view_title.' extends tx_lib_'.$this->pObj->viewEngines[$vi
 		}
 	}
 
+    /**
+     * Generates the action.
+     *
+     * @param       array            the action configuration array
+     * @param       string			 the current classname
+     */
+    function generateAction($action, $cN) {
+        $action_title = $this->generateName($action[title], 0, 0, $action[freename]);
+		if(!trim($action_title)) return;
+
+        $model = $this->generateName(
+              $this->pObj->wizard->wizArray['tables'][$action['model']][tablename],
+              $this->pObj->wizard->wizArray['mvcmodel'][$action['model']][title],
+              $cN.'_model_',
+              $this->pObj->wizard->wizArray['mvcmodel'][$action['model']][freename]
+        );
+		$view  = $this->generateName(
+              $this->pObj->wizard->wizArray['mvcview'][$action[view]][title],
+              0,
+              $cN.'_view_',
+              $this->pObj->wizard->wizArray['mvcview'][$action[view]][freename]
+        );
+		$template  = $this->generateName(
+              $this->pObj->wizard->wizArray['mvctemplate'][$action[template]][title],
+              0,
+              0,
+              $this->pObj->wizard->wizArray['mvctemplate'][$action[template]][freename]
+        );
+
+		$indexContent .= '
+	/**
+	 * Implementation of '.$action_title.'Action()'.
+		$this->formatComment($action[description], 1).'
+	 */
+    function '.$action_title.'Action() {'.
+    	($action[plus_ajax]?'
+    	$response = tx_div::makeInstance(\'tx_xajax_response\');':'').'
+        $modelClassName = tx_div::makeInstanceClassName(\''.$model.'\');
+        $viewClassName = tx_div::makeInstanceClassName(\''.$view.'\');
+        $entryClassName = tx_div::makeInstanceClassName($this->configurations->get(\'entryClassName\'));
+		$translatorClassName = tx_div::makeInstanceClassName(\'tx_lib_translator\');
+        $view = new $viewClassName($this);
+        $model = new $modelClassName($this);
+        $model->load($this->parameters);
+        for($model->rewind(); $model->valid(); $model->next()) {
+            $entry = new $entryClassName($model->current(), $this);
+            $view->append($entry);
+        }
+        $view->setTemplatePath($this->configurations->get(\'templatePath\'));
+        $view->render($this->configurations->get(\''.$template.'\'));
+		$translator = new $translatorClassName($this, $view);
+		$out = $translator->translateContent();';
+       	if($action[plus_ajax]) {
+			$indexContent .= '
+        $response->addAssign(\'###EDIT: choose container to update here!###\', \'innerHTML\', $out);
+        return $response;';
+		}
+		else {
+			$indexContent .= '
+        return $out;';
+		}
+		$indexContent .= '
+    }
+';
+
+		return $indexContent;
+    }
+
 	/**
      * Generates the class.tx_*_configuration.php
      *
@@ -215,7 +283,7 @@ class '.$cN.'_view_'.$view_title.' extends tx_lib_'.$this->pObj->viewEngines[$vi
         $actions = $this->pObj->wizard->wizArray['mvcaction'];
         if(!is_array($actions)) return array();
 		foreach($actions as $action) {
-			if($action[plugin] != $k) continue;
+			if($action[controller] != $k) continue;
 
 			$action_title = $this->generateName($action[title],0,0,$action[freename]);
 			if(!trim($action_title)) continue;
@@ -299,6 +367,19 @@ ajaxResponse.50 {
 		return $lines;
 	}
 
+	function getDefaultAction($k) {
+        $actions = $this->pObj->wizard->wizArray['mvcaction'];
+        if(!is_array($actions)) return '';
+		foreach($actions as $action) {
+			if($action[controller] != $k) continue;
+
+			$action_title = $this->generateName($action[title],0,0,$action[freename]);
+			if(!trim($action_title)) continue;
+
+			return $action_title;
+		}
+		return '';
+	}
 }
 
 
