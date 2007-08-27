@@ -248,8 +248,8 @@ class '.$cN.'_view_'.$view_title.' extends tx_lib_'.$this->pObj->viewEngines[$vi
             $entry = new $entryClassName($model->current(), $this);
             $view->append($entry);
         }
-        $view->setTemplatePath($this->configurations->get(\'templatePath\'));
-        $view->render($this->configurations->get(\''.$template.'\'));
+        $view->setPathToTemplateDirectory($this->configurations->get(\'templatePath\'));
+        $view->render(\''.$template.'\');
 		$translator = new $translatorClassName($this, $view);
 		$out = $translator->translateContent();';
        	if($action[plus_ajax]) {

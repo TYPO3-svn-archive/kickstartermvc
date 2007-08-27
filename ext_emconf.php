@@ -34,7 +34,7 @@ $EM_CONF[$_EXTKEY] = array(
 	'CGLcompliance_note' => '',
 	'constraints' => array(
 		'depends' => array(
-			'kickstarter' => '0.3.8-',
+			'kickstarter' => '0.3.8-0.0.0',
 		),
 		'conflicts' => array(
 		),

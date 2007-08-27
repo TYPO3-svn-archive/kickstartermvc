@@ -158,6 +158,9 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_section_mvc_base {
 		$renderer->generateTemplates($extKey, $k);
 		$renderer->generateFlexform($extKey, $k);
 
+		$this->wizard->ext_localconf[] = 'require_once(t3lib_extMgm::extPath(\'div\') . \'class.tx_div.php\');';
+		$this->wizard->ext_localconf[] = 'if(TYPO3_MODE == \'FE\') tx_div::autoLoadAll($_EXTKEY);';
+
 			// Add wizard?
 
 		if ($config['plus_wiz'])	{
