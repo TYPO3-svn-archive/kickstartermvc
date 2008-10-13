@@ -27,7 +27,7 @@
  * @author  Christian Welzel <gawain@camlann.de>
  */
 
-require_once(t3lib_extMgm::extPath('kickstarter__mvc').'sections/class.tx_kickstarter_section_mvc_base.php');
+require_once(t3lib_extMgm::extPath('kickstarter__mvc_ex').'sections/class.tx_kickstarter_section_mvc_base.php');
 
 class tx_kickstarter_section_mvc_template extends tx_kickstarter_section_mvc_base {
 	var $sectionID = 'mvctemplate';
@@ -52,12 +52,46 @@ class tx_kickstarter_section_mvc_template extends tx_kickstarter_section_mvc_bas
 				$this->renderStringBox($ffPrefix.'[title]',$piConf[title]);
 			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
 
+            $modelValues = array(
+ 		''		=> '-',	// no preset (empty)
+            );
+            $typeValues = array(
+ 		''		=> '-',	// no preset (empty)
+
+               	'cloud'   	=> 'Cloud',		// -> cloud, render
+
+            	'show'		=> 'SingleView',	// -> render
+            	'render'   	=> 'ListView',		// -> render, show
+            	'tree'   	=> 'TreeView',		// -> tree, show
+            	'renderedshow'  => 'InlineListView',
+
+            	'form'		=> 'SingleEdit',	// -> list, [create, edit]
+            	'list'   	=> 'ListEdit',		// -> list, maintain, [hide, remove]
+            	'hierarchy'   	=> 'TreeEdit',		// -> tree, maintain, [hide, remove]
+            	'listedform'	=> 'InlineListEdit',	// -> [sync]
+
+            	'select'	=> 'SelectChoice',
+            	'radio'		=> 'RadioChoice',
+            	'checkbox'	=> 'CheckboxChoice',
+            );
+
+            if(is_array($this->wizard->wizArray['mvcmodel']))
+                foreach($this->wizard->wizArray['mvcmodel'] as $key => $vv) {
+                    $modelValues[$vv[freename]] = $vv[title] . ' (' . $vv[freename] . ')';
+                }
+
             $lines[] = '<tr'.$this->bgCol(2).'><td>'.$this->fw('<strong>This template is for:</strong>').'</td></tr>';
 			$subContent = $this->renderSelectBox($ffPrefix.'[inherit]', $piConf[inherit], $this->viewEngines).'<br />';
             $lines[] = '<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
 
             $lines[] = '<tr><td><strong>Free name for template</strong></td></tr>';
-            $lines[] = '<tr><td>'.$this->renderStringBox($ffPrefix.'[freename]',$piConf[freename]).'</td></tr>';
+			$lines[] = '<tr><td>'.$this->renderStringBox($ffPrefix.'[freename]',$piConf[freename]).'</td></tr>';
+
+            $lines[] = '<tr><td><strong>Pre-fill the template according to this table/type</strong></td></tr>';
+			$lines[] = '<tr><td nowrap="nowrap">'.
+				$this->renderSelectBox($ffPrefix.'[fill_type]',$piConf[fill_type],$typeValues).' ('.
+				$this->renderSelectBox($ffPrefix.'[fill_model]',$piConf[fill_model],$modelValues).')'.
+			'</td></tr>';
 
 		}
 
@@ -69,8 +103,8 @@ class tx_kickstarter_section_mvc_template extends tx_kickstarter_section_mvc_bas
 
 
 // Include ux_class extension?
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc/sections/class.tx_kickstarter_section_mvc_template.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc/sections/class.tx_kickstarter_section_mvc_template.php']);
+if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc_ex/sections/class.tx_kickstarter_section_mvc_template.php']) {
+	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc_ex/sections/class.tx_kickstarter_section_mvc_template.php']);
 }
 
 ?>

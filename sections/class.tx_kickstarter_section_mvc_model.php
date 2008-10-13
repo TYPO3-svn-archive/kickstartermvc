@@ -27,7 +27,7 @@
  * @author  Christian Welzel <gawain@camlann.de>
  */
 
-require_once(t3lib_extMgm::extPath('kickstarter__mvc').'sections/class.tx_kickstarter_section_mvc_base.php');
+require_once(t3lib_extMgm::extPath('kickstarter__mvc_ex').'sections/class.tx_kickstarter_section_mvc_base.php');
 
 class tx_kickstarter_section_mvc_model extends tx_kickstarter_section_mvc_base {
 	var $sectionID = 'mvcmodel';
@@ -47,49 +47,123 @@ class tx_kickstarter_section_mvc_model extends tx_kickstarter_section_mvc_base {
 			$piConf   = $this->wizard->wizArray[$this->sectionID][$action[1]];
 			$ffPrefix = '['.$this->sectionID.']['.$action[1].']';
 
+			/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 				// Enter title of the plugin
 			$subContent='<strong>Enter a title for the model:</strong><br />'.
 				$this->renderStringBox($ffPrefix.'[title]',$piConf['title']);
 			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
 
+			/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 			$subContent='<strong>Enter a short description for the model:</strong><br />'.
 				$this->renderTextareaBox($ffPrefix.'[description]',$piConf['description']);
 			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
 
+			/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 			$lines[] = '<tr><td><strong>Generate model for table:</strong></td></tr>';
 
-            $optValues = array(
-                'tt_content' => 'tt_content (Content)',
-                'fe_users' => 'fe_users (Frontend Users)',
-                'fe_groups' => 'fe_groups (Frontend Groups)',
-                'be_users' => 'be_users (Backend Users)',
-                'be_groups' => 'be_groups (Backend Groups)',
-                'pages' => 'pages (Pages)',
-            );
+			$optValues = array(
+			    'tt_content' => 'tt_content (Content)',
+			    'fe_users'   => 'fe_users (Frontend Users)',
+			    'fe_groups'  => 'fe_groups (Frontend Groups)',
+			    'be_users'   => 'be_users (Backend Users)',
+			    'be_groups'  => 'be_groups (Backend Groups)',
+			    'pages'      => 'pages (Pages)',
+			);
+
 			if(is_array($this->wizard->wizArray['tables'])) {
 				$tables = $this->wizard->wizArray['tables'];
 				foreach($tables as $kk => $fC)	{
 					$optValues[$kk] = (
-						$fC['tablename'] || 
-						$fC['title'] ? 
+						$fC['tablename'] ||
+						$fC['title'] ?
 							$fC['title'].' ('.$this->returnName($this->wizard->extKey,'tables').
 							($fC['tablename'] ? '_'.$fC['tablename'] : '' )
 							.')' :
 							'Item '.$kk).' ('.count($fC['fields']).' fields)';
 				}
 			}
-            foreach($GLOBALS['TCA'] as $tablename => $tableTCA) {
-                if(!$optValues[$tablename]) {
-                    $optValues[$tablename] = $tablename.' ('.$GLOBALS['LANG']->sL($tableTCA['ctrl']['title']).')';
-                }
-            }
-            asort($optValues);
 
+			foreach($GLOBALS['TCA'] as $tablename => $tableTCA) {
+			    if(!$optValues[$tablename]) {
+			        $optValues[$tablename] = $tablename.' ('.$GLOBALS['LANG']->sL($tableTCA['ctrl']['title']).')';
+			    }
+			}
+
+			asort($optValues);
+
+			/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 			$subContent=$this->renderSelectBox($ffPrefix.'[table]',$piConf[table],$optValues);
-            $lines[] = '<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
+			$lines[] = '<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
 
-            $lines[] = '<tr><td><strong>Free name for model class</strong></td></tr>';
-            $lines[] = '<tr><td>'.$this->renderStringBox($ffPrefix.'[freename]',$piConf[freename]).'</td></tr>';
+			/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+			$lines[] = '<tr><td><strong>Free name for model class</strong></td></tr>';
+			$lines[] = '<tr><td>'.$this->renderStringBox($ffPrefix.'[freename]',$piConf[freename]).'</td></tr>';
+
+//			/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+//			$subContent='<strong>Joined load:</strong><br />'.
+//				$this->renderCheckBox($ffPrefix.'[plus_join]',$piConf['plus_join']).
+//				'Enable joined loads<br />';
+//			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
+//
+//			if ($piConf['plus_join']) {
+//				/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+//				$subContent=' Number of presets:<br />'.
+//					$this->renderStringBox($ffPrefix.'[segmentnum]',$piConf['segmentnum'],50);
+//				$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
+//
+//				if (intval($piConf['segmentnum']) > 0) {
+//					$optValues = array();
+//
+//					$tables = $this->wizard->wizArray['tables'];	if(is_array($tables)) {
+//					$table = $tables[$piConf[table]];		if(is_array($table)) {
+//					$fields = $table[fields];			if(is_array($fields)) {
+//					foreach ($fields as $key => $field) {
+//						$field_name = $field['fieldname'];
+//
+//						$optValues[$field_name] = $field_name;
+//					}						}}}
+//
+//					for ($sp = 0; $sp < $piConf['segmentnum']; $sp++) {
+//						/* ++++++++++++++++++++++++++++++++++++++++++++++ */
+//						$subContent=' Preset['.$sp.']:<br />'.
+//							$this->renderStringBox($ffPrefix.'[segmentnames]['.$sp.']',$piConf['segmentnames'][$sp],200).'<br />'.
+//							$this->renderMultiSelectBox($ffPrefix.'[segment]['.$sp.'][]',$piConf['segment'][$sp],$optValues);
+//						$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
+//					}
+//				}
+//			}
+
+			/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+			$subContent='<strong>Segmentation presets:</strong><br />'.
+				$this->renderCheckBox($ffPrefix.'[plus_seg]',$piConf['plus_seg']).
+				'Enable segmentation presets<br />';
+			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
+
+			if ($piConf['plus_seg']) {
+				/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+				$subContent=' Number of presets:<br />'.
+					$this->renderStringBox($ffPrefix.'[segmentnum]',$piConf['segmentnum'],50);
+				$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
+
+				if (intval($piConf['segmentnum']) > 0) {
+					$optValues = array();
+
+					$table = $this->retreiveTableInfos($piConf[table]);	if(is_array($table)) {
+					$fields = $table[fields];				if(is_array($fields)) {
+					foreach ($fields as $key => $field) {
+						$field_name = $field['fieldname'];
+						$optValues[$field_name] = $field_name;
+					}							}}
+
+					for ($sp = 0; $sp < $piConf['segmentnum']; $sp++) {
+						/* ++++++++++++++++++++++++++++++++++++++++++++++ */
+						$subContent=' Preset['.$sp.']:<br />'.
+							$this->renderStringBox($ffPrefix.'[segmentnames]['.$sp.']',$piConf['segmentnames'][$sp],200).'<br />'.
+							$this->renderMultiSelectBox($ffPrefix.'[segment]['.$sp.'][]',$piConf['segment'][$sp],$optValues);
+						$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
+					}
+				}
+			}
 		}
 
 		$content = '<table border=0 cellpadding=2 cellspacing=2>'.implode("\n",$lines).'</table>';
@@ -100,8 +174,8 @@ class tx_kickstarter_section_mvc_model extends tx_kickstarter_section_mvc_base {
 
 
 // Include ux_class extension?
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc/sections/class.tx_kickstarter_section_mvc_model.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc/sections/class.tx_kickstarter_section_mvc_model.php']);
+if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc_ex/sections/class.tx_kickstarter_section_mvc_model.php']) {
+	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc_ex/sections/class.tx_kickstarter_section_mvc_model.php']);
 }
 
 ?>

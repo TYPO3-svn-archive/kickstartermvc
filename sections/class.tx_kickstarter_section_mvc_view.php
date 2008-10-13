@@ -27,7 +27,7 @@
  * @author  Christian Welzel <gawain@camlann.de>
  */
 
-require_once(t3lib_extMgm::extPath('kickstarter__mvc').'sections/class.tx_kickstarter_section_mvc_base.php');
+require_once(t3lib_extMgm::extPath('kickstarter__mvc_ex').'sections/class.tx_kickstarter_section_mvc_base.php');
 
 class tx_kickstarter_section_mvc_view extends tx_kickstarter_section_mvc_base {
 	var $sectionID = 'mvcview';
@@ -72,8 +72,8 @@ class tx_kickstarter_section_mvc_view extends tx_kickstarter_section_mvc_base {
 
 
 // Include ux_class extension?
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc/sections/class.tx_kickstarter_section_mvc_view.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc/sections/class.tx_kickstarter_section_mvc_view.php']);
+if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc_ex/sections/class.tx_kickstarter_section_mvc_view.php']) {
+	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc_ex/sections/class.tx_kickstarter_section_mvc_view.php']);
 }
 
 ?>

@@ -28,6 +28,7 @@
  */
 
 require_once(t3lib_extMgm::extPath('kickstarter').'class.tx_kickstarter_sectionbase.php');
+require_once(t3lib_extMgm::extPath('kickstarter__mvc_ex').'dbinfos.php');
 
 class tx_kickstarter_section_mvc_base extends tx_kickstarter_sectionbase {
 	var $pluginnr = -1;
@@ -35,6 +36,36 @@ class tx_kickstarter_section_mvc_base extends tx_kickstarter_sectionbase {
 	var $renderer = array('simple', 'switched');
 	var $renderer_select = array('0'=>'Simple Controllers', '1'=>'Switched Controllers');
 	var $ajaxActions = array();
+
+	function retreiveTableInfos($tableid) {
+		if (is_numeric($tableid))
+			if (is_array($this->wizard->wizArray['tables']))
+				return $this->wizard->wizArray['tables'][$tableid];
+			else
+				return null;
+
+		/* reverse-engineer the table if it's in the database */
+		return $GLOBALS['KSRE'][$tableid];
+	}
+
+	/**
+	 * renders a multi-select box
+	 *
+	 * @param	string		field prefix
+	 * @param	string		the value of the preselected option
+	 * @param	array		array of string values for the options
+	 * @return	string		the complete select box
+	 */
+	function renderMultiSelectBox($prefix,$values,$optValues,$size=8)	{
+		$onCP = $this->getOnChangeParts($prefix);
+		$opt=array();
+		foreach($optValues as $k=>$v)	{
+			if (is_array($values))
+				$sel = (in_array($k,$values)?' selected="selected"':'');
+			$opt[]='<option value="'.htmlspecialchars($k).'"'.$sel.'>'.htmlspecialchars($v).'</option>';
+		}
+		return $this->wopText($prefix).$onCP[0].'<select multiple="multiple" size="'.$size.'" name="'.$this->piFieldName("wizArray_upd").$prefix.'" onchange="'.$onCP[1].'"'.$this->wop($prefix).'>'.implode('',$opt).'</select>';
+	}
 
 }
 

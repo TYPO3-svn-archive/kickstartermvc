@@ -1,0 +1,213 @@
+
+
+
+
+	body {
+		padding-left: 1em;
+		padding-right: 1em;
+	}
+
+	a img {
+		border: 0;
+		position: relative;
+		top: 3px;
+	}
+
+	a:hover {
+		text-decoration: underline;
+	}
+
+	/* ################################################################## */
+	div.navigation {
+		float: left;
+		padding-right: 2%;
+		width: 22%;
+	}
+
+	div.content {
+		float: right;
+		padding-left: 2%;
+		width: 73%;
+
+		border-left: 1px solid black;
+	}
+
+	/* ################################################################## */
+	table {
+		border-spacing: 0;
+		border-collapse: collapse;
+		empty-cells: show;
+		width: 100%;
+	}
+
+	table > caption {
+		text-align: left;
+		font-weight: bold;
+	}
+
+	table > thead {
+		border: 1px solid #CFCFCF;
+		background: #F0F0F0;
+	}
+
+	table > tbody {
+		border: 1px solid #CFCFCF;
+		background: #FFFFFF;
+	}
+
+	table > tfoot {
+		border: 1px solid #CFCFCF;
+		background: #F7F7F7;
+	}
+
+	table th,
+	table td {
+		border: 1px solid #CFCFCF;
+	}
+
+	table th.note,
+	table td.note {
+		color: #3F3F3F;
+		text-align: center;
+		padding: 1em;
+		font-style: italic;
+	}
+
+	table > tfoot td {
+		text-align: center;
+	}
+
+	/* ################################################################## */
+	div.actions {
+		margin-top: 1em;
+		border-top: 1px solid black;
+		padding-top: 1em;
+		text-align: center;
+	}
+
+	/* ------------------------------------------------------------------ */
+	dt {
+		margin-top: 0.5em;
+
+		float: left; clear: left;
+		width: 33%;
+		display: block;
+	}
+
+	dd {
+		margin-top: 0.5em;
+
+		margin-left: 33%;
+		width: 67%;
+		display: block;
+	}
+
+	/* ------------------------------------------------------------------ */
+	th,
+	dt > label {
+		font-weight: normal;
+		color: #3F3F3F;
+	}
+
+	td > input,
+	td > a > input,
+	td > select,
+/*	td > select > option,
+	td > select > optgroup > option,*/
+	td > textarea,
+	dd > input,
+	dd > a > input,
+	dd > select,
+/*	dd > select > option,
+	dd > select > optgroup > option,*/
+	dd > textarea {
+		background: #FFFFFF;
+		border: 1px solid #7F7F7F;
+		color: #3F3F3F;
+	}
+
+	/* ------------------------------------------------------------------ */
+	td > input[type="text"],
+	dd > input[type="text"] {
+		width: 50%; }
+	td > textarea[cols=""],
+	dd > textarea[cols=""] {
+		width: 100%; }
+	td > textarea[rows=""],
+	dd > textarea[rows=""] {
+		height: 12.3em; }
+	td > select,
+	dd > select {
+		min-width: 50%;
+		max-width: 100%; }
+
+	/* ------------------------------------------------------------------ */
+	td > input.float,
+	dd > input.float {
+		text-align: right;
+		width: 12em; }
+	td > input.integer,
+	dd > input.integer {
+		text-align: right;
+		width: 12em; }
+
+	/* ------------------------------------------------------------------ */
+	th.req,
+	dt.req > label {
+		font-weight: bold;
+		color: #000000;
+	}
+
+	td.req > input,
+	td.req > select,
+/*	td.req > select > option,
+	td.req > select > optgroup > option,*/
+	td.req > textarea,
+	dd.req > input,
+	dd.req > select,
+/*	dd.req > select > option,
+	dd.req > select > optgroup > option,*/
+	dd.req > textarea {
+		border-color: #000000;
+		background: #F0F0F0;
+	}
+
+	th.err,
+	dt.err > label {
+		color: #CF0000;
+	}
+
+	td.err > input,
+	td.err > select,
+/*	td.err > select > option,
+	td.err > select > optgroup > option,*/
+	td.err > textarea,
+	dd.err > input,
+	dd.err > select,
+/*	dd.err > select > option,
+	dd.err > select > optgroup > option,*/
+	dd.err > textarea {
+		border-color: #CF0000;
+		background-color: #FFF7F7;
+	}
+
+	/* ------------------------------------------------------------------ */
+	td.req.err > input[value=""],
+	dd.req.err > input[value=""] {
+	/*	border-color: #00CF00;
+		background-color: #F7FFF7;	*/
+	}
+
+	/* ------------------------------------------------------------------ */
+	tr.help,
+	dd.help {
+	/*	display: none;	*/
+		font-size: 0.9em;
+	}
+
+	tr.error,
+	dd.error {
+	/*	display: none;	*/
+		font-size: 0.9em;
+		color: red;
+	}

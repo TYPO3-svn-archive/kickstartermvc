@@ -27,7 +27,7 @@
  * @author  Christian Welzel <gawain@camlann.de>
  */
 
-require_once(t3lib_extMgm::extPath('kickstarter__mvc').'sections/class.tx_kickstarter_section_mvc_base.php');
+require_once(t3lib_extMgm::extPath('kickstarter__mvc_ex').'sections/class.tx_kickstarter_section_mvc_base.php');
 
 class tx_kickstarter_section_mvc_controller extends tx_kickstarter_section_mvc_base {
 	var $sectionID = 'mvccontroller';
@@ -49,8 +49,20 @@ class tx_kickstarter_section_mvc_controller extends tx_kickstarter_section_mvc_b
 
 				// Enter title of the plugin
 			$subContent='<strong>Enter a title for the controller:</strong><br />'.
-				$this->renderStringBox($ffPrefix.'[title]',$piConf['title']);
+				$this->renderStringBox($ffPrefix.'[title]',$piConf['title']) . ' [English]';
 			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
+
+				// Enter title of the plugin (other languages)
+if (count($this->wizard->languages))	{
+	reset($this->wizard->languages);
+	while(list($lk,$lv)=each($this->wizard->languages))	{
+		if (isset($this->wizard->selectedLanguages[$lk]))	{
+			$subContent=
+				$this->renderStringBox($ffPrefix.'[title'.'_'.$lk.']',$piConf['title'.'_'.$lk]) . ' ['.$lv.']';
+			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
+		}
+	}
+}
 
 			$subContent='<strong>Enter a short description for the controller:</strong><br />'.
 				$this->renderTextareaBox($ffPrefix.'[description]',$piConf['description']);
@@ -78,8 +90,8 @@ class tx_kickstarter_section_mvc_controller extends tx_kickstarter_section_mvc_b
 
 
 // Include ux_class extension?
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc/sections/class.tx_kickstarter_section_mvc_controller.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc/sections/class.tx_kickstarter_section_mvc_controller.php']);
+if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc_ex/sections/class.tx_kickstarter_section_mvc_controller.php']) {
+	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc_ex/sections/class.tx_kickstarter_section_mvc_controller.php']);
 }
 
 ?>

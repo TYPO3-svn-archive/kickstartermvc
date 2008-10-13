@@ -27,7 +27,7 @@
  * @author  Christian Welzel <gawain@camlann.de>
  */
 
-require_once(t3lib_extMgm::extPath('kickstarter__mvc').'renderer/class.tx_kickstarter_renderer_base.php');
+require_once(t3lib_extMgm::extPath('kickstarter__mvc_ex').'renderer/class.tx_kickstarter_renderer_base.php');
 
 class tx_kickstarter_simple_renderer extends tx_kickstarter_renderer_base {
 
@@ -35,7 +35,7 @@ class tx_kickstarter_simple_renderer extends tx_kickstarter_renderer_base {
      * Generates the setup.txt
      *
      * @param       string           $extKey: current extension key
-     * @param       integer          $k: current number of plugin 
+     * @param       integer          $k: current number of plugin
      */
 	function generateSetup($extKey, $k) {
 		$lines = array();
@@ -47,9 +47,13 @@ includeLibs.tx_div = EXT:div/class.tx_div.php
 
 # Common configuration
 plugin.'.$cN.'_mvc'.$k.'.configuration {
-  templatePath = EXT:'.$extKey.'/templates/
-  entryClassName =
-  ajaxPageType = 110124
+	templatePath = EXT:'.$extKey.'/templates/
+
+	pathToTemplateDirectory = EXT:'.$extKey.'/templates/
+	pathToLanguageFile = EXT:'.$extKey.'/locallang.xml
+
+	entryClassName =
+	ajaxPageType = 110124
 }
 ';
 
@@ -67,8 +71,9 @@ includeLibs.'.$cN.'_controller_'.$contr_name.' = EXT:'.$extKey.'/controllers/cla
 plugin.'.$cN.'.controller_'.$contr_name.' = '.($contr[plus_user_obj]?'USER_INT':'USER').'
 plugin.'.$cN.'.controller_'.$contr_name.' < plugin.'.$cN.'_mvc'.$k.'.configuration
 plugin.'.$cN.'.controller_'.$contr_name.' {
-  userFunc = '.$cN.'_controller_'.$contr_name.'->main
-  defaultAction = '.$this->getDefaultAction($kk).'
+	userFunc = '.$cN.'_controller_'.$contr_name.'->main
+	defaultAction = '.$this->getDefaultAction($kk).'
+	configurations < plugin.'.$cN.'_mvc'.$k.'.configurations
 }
 
 tt_content.list.20.'.$extKey.'_'.$contr_name.' =< plugin.'.$cN.'.controller_'.$contr_name;
@@ -77,7 +82,7 @@ tt_content.list.20.'.$extKey.'_'.$contr_name.' =< plugin.'.$cN.'.controller_'.$c
 		if(count($ajaxed)) {
 			$lines[] = $this->getXajaxPage('110124', $cN);
 		}
-			
+
 		$this->pObj->addFileToFileArray('configurations/mvc'.$k.'/setup.txt', implode("\n", $lines));
 	}
 
@@ -85,8 +90,8 @@ tt_content.list.20.'.$extKey.'_'.$contr_name.' =< plugin.'.$cN.'.controller_'.$c
 
 
 // Include ux_class extension?
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc/renderer/class.tx_kickstarter_simple_renderer.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc/renderer/class.tx_kickstarter_simple_renderer.php']);
+if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc_ex/renderer/class.tx_kickstarter_simple_renderer.php']) {
+	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc_ex/renderer/class.tx_kickstarter_simple_renderer.php']);
 }
 
 ?>

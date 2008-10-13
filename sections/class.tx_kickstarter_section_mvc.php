@@ -27,10 +27,10 @@
  * @author  Christian Welzel <gawain@camlann.de>
  */
 
-require_once(t3lib_extMgm::extPath('kickstarter__mvc').'sections/class.tx_kickstarter_section_mvc_base.php');
+require_once(t3lib_extMgm::extPath('kickstarter__mvc_ex').'sections/class.tx_kickstarter_section_mvc_base.php');
 
-require_once(t3lib_extMgm::extPath('kickstarter__mvc').'renderer/class.tx_kickstarter_switched_renderer.php');
-require_once(t3lib_extMgm::extPath('kickstarter__mvc').'renderer/class.tx_kickstarter_simple_renderer.php');
+require_once(t3lib_extMgm::extPath('kickstarter__mvc_ex').'renderer/class.tx_kickstarter_switched_renderer.php');
+require_once(t3lib_extMgm::extPath('kickstarter__mvc_ex').'renderer/class.tx_kickstarter_simple_renderer.php');
 
 class tx_kickstarter_section_mvc extends tx_kickstarter_section_mvc_base {
 	var $sectionID = 'mvc';
@@ -50,11 +50,19 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_section_mvc_base {
 			$piConf   = $this->wizard->wizArray[$this->sectionID][$action[1]];
 			$ffPrefix = '['.$this->sectionID.']['.$action[1].']';
 
+			/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+				// Make it available to page-module
+			$subContent=$this->renderCheckBox($ffPrefix.'[plus_mod]',$piConf['plus_mod']).
+				'Add icon to \'Contains Plug-In\' for pages<br />';
+			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
+
+			/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 				// Enter title of the plugin
 			$subContent='<strong>Enter a title for the plugin:</strong><br />'.
 				$this->renderStringBox_lang('title',$ffPrefix,$piConf);
 			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
 
+			/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 				// Position
 			if (is_array($this->wizard->wizArray['fields']))	{
 				$optValues = array(
@@ -90,6 +98,7 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_section_mvc_base {
 			}
 */
 
+			/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 			$subContent='<strong>New Content Element Wizard</strong><br />'.
 			    $this->renderCheckBox($ffPrefix.'[plus_wiz]',$piConf['plus_wiz']).
 				'Add icon to \'New Content Element\' wizard<br />'.
@@ -99,12 +108,14 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_section_mvc_base {
 			$lines[] = '<tr><td><hr /></td></tr>';
 			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
 
+			/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 			$subContent='<strong>Code Layout Selection</strong><br />'.
 			    $this->renderSelectBox($ffPrefix.'[code_sel]',$piConf['code_sel'],
 				$this->renderer_select);
 			$lines[] = '<tr><td><hr /></td></tr>';
 			$lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
 
+			/* ---------------------------------------------------------------------- */
 				/* create default controller */
 			if(!isset($piConf[done])) {
 				$ctr_cnt = count($this->wizard->wizArray['mvccontroller'])+1;
@@ -131,6 +142,16 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_section_mvc_base {
 		$WOP='[mvc]['.$k.']';
 		$cN = $this->returnName($extKey,'class','mvc'.$k);
 
+		if ($config['plus_mod'])	{
+			$this->wizard->ext_locallang_db['default']['pages.module.'.$cN] = array($config[title]);
+
+			$this->wizard->ext_tables[]=$this->sPS(
+			' 	// pages modified' . "\n" .
+			't3lib_div::loadTCA(\'pages\');' . "\n" .
+			'$TCA[\'pages\'][\'columns\'][\'module\'][\'config\'][\'items\'][] = Array(\'LLL:EXT:\'.$_EXTKEY.\'/locallang_db.xml:pages.module.'.$cN.'\', \''.substr($extKey,0,8).$k/*$cN*/.'\');'
+			);
+		}
+
 		$this->wizard->ext_tables[]=$this->sPS('
 			'.$this->WOPcomment('WOP:'.$WOP.'[addType]')."
 			t3lib_div::loadTCA('tt_content');
@@ -150,13 +171,18 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_section_mvc_base {
 		$renderer = t3lib_div::makeInstance('tx_kickstarter_'.($this->renderer[$config[code_sel]]).'_renderer');
 		$renderer->setParent($this);
 
-		$renderer->generateSetup($extKey, $k);
-		$renderer->generateControllers($extKey, $k);
-		$renderer->generateConfigClass($extKey, $k);
+		$renderer->generateGeneric($extKey, $k);
+
 		$renderer->generateModels($extKey, $k);
+		$renderer->generateControllers($extKey, $k);
 		$renderer->generateViews($extKey, $k);
 		$renderer->generateTemplates($extKey, $k);
+
+		$renderer->generateConfigClass($extKey, $k);
 		$renderer->generateFlexform($extKey, $k);
+		$renderer->generateSetup($extKey, $k);
+
+		$renderer->cleanupGeneric($extKey, $k);
 
 		$this->wizard->ext_localconf[] = 'require_once(t3lib_extMgm::extPath(\'div\') . \'class.tx_div.php\');';
 		$this->wizard->ext_localconf[] = 'if(TYPO3_MODE == \'FE\') tx_div::autoLoadAll($_EXTKEY);';
@@ -199,13 +225,13 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_section_mvc_base {
 					function includeLocalLang()	{
 						$llFile = t3lib_extMgm::extPath(\''.$extKey.'\').\'locallang.xml\';
 						$LOCAL_LANG = t3lib_div::readLLXMLfile($llFile, $GLOBALS[\'LANG\']->lang);
-						
+
 						return $LOCAL_LANG;
 					}
 				}
 			',
 			0);
-			
+
 			$this->addFileToFileArray(
 				'configurations/mvc'.$k.'/class.'.$cN.'_wizicon.php',
 				$this->PHPclassFile(
@@ -229,8 +255,8 @@ class tx_kickstarter_section_mvc extends tx_kickstarter_section_mvc_base {
 
 
 // Include ux_class extension?
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc/sections/class.tx_kickstarter_section_mvc.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc/sections/class.tx_kickstarter_section_mvc.php']);
+if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc_ex/sections/class.tx_kickstarter_section_mvc.php']) {
+	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc_ex/sections/class.tx_kickstarter_section_mvc.php']);
 }
 
 ?>

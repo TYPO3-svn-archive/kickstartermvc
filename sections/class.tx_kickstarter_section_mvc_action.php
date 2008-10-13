@@ -27,7 +27,7 @@
  * @author  Christian Welzel <gawain@camlann.de>
  */
 
-require_once(t3lib_extMgm::extPath('kickstarter__mvc').'sections/class.tx_kickstarter_section_mvc_base.php');
+require_once(t3lib_extMgm::extPath('kickstarter__mvc_ex').'sections/class.tx_kickstarter_section_mvc_base.php');
 
 class tx_kickstarter_section_mvc_action extends tx_kickstarter_section_mvc_base {
 	var $sectionID = 'mvcaction';
@@ -57,24 +57,45 @@ class tx_kickstarter_section_mvc_action extends tx_kickstarter_section_mvc_base 
             $lines[]='<tr'.$this->bgCol(3).'><td>'.$this->fw($subContent).'</td></tr>';
 
             $controllerValues = array();
+            $modelValues = array(
+            	''			=> '- (not DB-driven/state-change free)'
+            );
+            $viewValues = array(
+            	''			=> '- (has no visual reflection)'
+            );
+            $templValues = array(
+            	''			=> '- (has no visual reflection)'
+            );
+            $presetValues = array(
+ 		''			=> '-',				// no preset (empty)
+		'render'		=> 'List', 			// list + show controls
+ 		'list'			=> 'List (with controls)',	// list + create/edit/remove controls
+		'maintainlisted'	=> 'List (with bulk-controls)', // bulk   create/edit controls
+		'tree'			=> 'Tree', 			// tree + show controls
+ 		'hierarchy'		=> 'Tree (with controls)',	// tree + create/edit/remove controls
+		'search'		=> 'Results (with highlights)', // list + show controls + hints
+                'cloud' 	  	=> 'Cloud',			// cloud
+		'maintain'		=> 'Edit', 			//        create/edit controls
+		'show'			=> 'Show', 			//        show controls
+		'trigger'		=> 'Trigger model',		// trigger the model
+		'display'		=> 'Render template',		// pass-through template, nothing else, no model
+            );
+
             if(is_array($this->wizard->wizArray['mvccontroller']))
                 foreach($this->wizard->wizArray['mvccontroller'] as $key => $vv) $controllerValues[$key] = $vv[title];
-            $modelValues = array();
-            if(is_array($this->wizard->wizArray['mvcmodel']))
-                foreach($this->wizard->wizArray['mvcmodel'] as $key => $vv) $modelValues[$key] = $vv[title];
-            $viewValues = array();
-            if(is_array($this->wizard->wizArray['mvcview']))
-                foreach($this->wizard->wizArray['mvcview'] as $key => $vv) $viewValues[$key] = $vv[title];
-            $templValues = array();
-            if(is_array($this->wizard->wizArray['mvctemplate']))
-                foreach($this->wizard->wizArray['mvctemplate'] as $key => $vv) $templValues[$key] = $vv[title];
+            if(is_array($this->wizard->wizArray['mvcmodel'     ]))
+                foreach($this->wizard->wizArray['mvcmodel'     ] as $key => $vv) $modelValues[$key] = $vv[title];
+            if(is_array($this->wizard->wizArray['mvcview'      ]))
+                foreach($this->wizard->wizArray['mvcview'      ] as $key => $vv) $viewValues[$key] = $vv[title];
+            if(is_array($this->wizard->wizArray['mvctemplate'  ]))
+                foreach($this->wizard->wizArray['mvctemplate'  ] as $key => $vv) $templValues[$key] = $vv[title];
 
             $lines[] = '<tr><td><strong>This action belongs to contoller</strong></td></tr>';
 			$lines[] = '<tr><td>'.$this->renderSelectBox($ffPrefix.'[controller]',$piConf[controller],$controllerValues).'</td></tr>';
 
-			$lines[] = '<tr><td><strong>This is the default action for the above controller on</strong></td></tr>';
+            $lines[] = '<tr><td><strong>This is the default action for the above controller on</strong></td></tr>';
 			$lines[] = '<tr><td>'.$this->renderCheckBox($ffPrefix.'[defaction]',$piConf[defaction]).'</td></tr>';
-			
+
             $lines[] = '<tr><td><strong>Make this action callable through AJAX.</strong></td></tr>';
 			$lines[] = '<tr><td>'.$this->renderCheckBox($ffPrefix.'[plus_ajax]', $piConf[plus_ajax]).'</td></tr>';
 
@@ -88,7 +109,10 @@ class tx_kickstarter_section_mvc_action extends tx_kickstarter_section_mvc_base 
 			$lines[] = '<tr><td>'.$this->renderSelectBox($ffPrefix.'[template]',$piConf[template],$templValues).'</td></tr>';
 
             $lines[] = '<tr><td><strong>Free name for action class</strong></td></tr>';
-            $lines[] = '<tr><td>'.$this->renderStringBox($ffPrefix.'[freename]',$piConf[freename]).'</td></tr>';
+			$lines[] = '<tr><td>'.$this->renderStringBox($ffPrefix.'[freename]',$piConf[freename]).'</td></tr>';
+
+            $lines[] = '<tr><td><strong>Preset for this action\'s function-body</strong></td></tr>';
+			$lines[] = '<tr><td>'.$this->renderSelectBox($ffPrefix.'[preset]',$piConf[preset],$presetValues).'</td></tr>';
 		}
 
 		$content = '<table border=0 cellpadding=2 cellspacing=2>'.implode("\n",$lines).'</table>';
@@ -99,8 +123,8 @@ class tx_kickstarter_section_mvc_action extends tx_kickstarter_section_mvc_base 
 
 
 // Include ux_class extension?
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc/sections/class.tx_kickstarter_section_mvc_action.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc/sections/class.tx_kickstarter_section_mvc_action.php']);
+if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc_ex/sections/class.tx_kickstarter_section_mvc_action.php']) {
+	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/kickstarter__mvc_ex/sections/class.tx_kickstarter_section_mvc_action.php']);
 }
 
 ?>
